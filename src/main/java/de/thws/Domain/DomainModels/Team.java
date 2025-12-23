@@ -1,72 +1,67 @@
 package de.thws.Domain.DomainModels;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 public class Team {
-    private final Long teamId;
     private String teamName;
-    private String description;
-    private List<TeamMember> teamMembers = new ArrayList<>();
+    private List<TeamMember> teamMembers;
     private final LocalDateTime createdAt;
     private final User owner;
-    public Team(Long teamId, String teamName, String description, ArrayList<TeamMember> teamMembers, LocalDateTime createdAt, User owner){
-        this.teamId = teamId;
+
+    public Team(String teamName, User owner) {
         this.teamName = teamName;
-        this.description = description;
-        this.teamMembers = teamMembers;
-        this.createdAt = createdAt;
+        this.createdAt = LocalDateTime.now();
         this.owner = owner;
-        this.teamMembers.add(new TeamMember(teamId, owner, TeamRole.OWNER, createdAt));
+        this.teamMembers = new ArrayList<>();
+        this.teamMembers.add(new TeamMember(owner, TeamRole.OWNER));
     }
 
-    public Long getTeamId() {
-        return teamId;}
-    public void createTeam() {}
+
     public void updateTeam(String teamName, String description) {
         this.teamName = teamName;
-        this.description = description;}
-
-//TODO deleteTeam
-    public void deleteTeam() {
 
     }
+
     public void addMember(User user, TeamRole teamRole) {
-        teamMembers.add(new TeamMember(teamId, user, teamRole, LocalDateTime.now()));
+        teamMembers.add(new TeamMember(user, teamRole));
     }
-    public void removeMember(User user) {
-        for (int i = 0; i < teamMembers.size(); i++) {
-            TeamMember tm = teamMembers.get(i);
-            if (tm.getUser().getUserId().equals(user.getUserId())) {
-                teamMembers.remove(i);
-                break;
-            }
-        }
+
+    //Username is a unique identifier for every user (in case if username is not changed)
+    // -> every user can be a team member -> unique id in the domain model is a username and has nothing to do with the DB
+    public void removeMember(String username) {
+        teamMembers.removeIf(tm -> tm.getUser().getEmail().equals(username));  //implements a func Interface
     }
-    private TeamMember findMemberById(Long memberId){
-        for (int i = 0; i < teamMembers.size(); i++) {
-            TeamMember tm = teamMembers.get(i);
-            if (tm.getUser().getUserId().equals(memberId)) {
+
+    private TeamMember findMemberByUsername(String username) {
+        for (TeamMember tm : teamMembers) {
+            if (tm.getUser().getUsername().equals(username))
                 return tm;
-            }
         }
         return null;
     }
 
+
     public List<TeamMember> getTeamMembers() {
         return teamMembers;
     }
-    public void assignProject(Long memberId, Project project) {
-        TeamMember member = findMemberById(memberId);
+
+
+    public void assertCanAssignProjects(User user) {
+        TeamMember member = findMember(user);
         if (member == null) {
-            return;
+            throw new IllegalStateException("User is not a team member");
         }
         if (!member.getRole().canManageProjects()) {
-            return;
+            throw new IllegalStateException("User has no permission to assign projects");
         }
-       // projects.add(project);
     }
-//    public List<Project> getTeamProjects() {
-//     //return projects;
-//
-//    }
+
+    private TeamMember findMember(User user) {
+        return teamMembers.stream()
+                .filter(m -> m.getUser().equals(user))
+                .findFirst()
+                .orElse(null);
+    }
 }
