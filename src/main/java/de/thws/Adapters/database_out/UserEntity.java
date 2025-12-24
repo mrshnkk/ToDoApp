@@ -24,8 +24,7 @@ public class UserEntity {
 
     public UserEntity(){}
 
-    public UserEntity(Long userId, String username, String email, String passwordHash){
-        this.userId= userId;
+    public UserEntity(String username, String email, String passwordHash){
         this.username=username;
         this.email= email;
         this.passwordHash= passwordHash;
@@ -52,12 +51,6 @@ public class UserEntity {
         return createdAt;
     }
 
-    public void setUserId(Long id) {  //constraint for changing the unique Id
-        if (this.userId != null) {
-            throw new IllegalStateException("ID already set");
-        }
-        this.userId = id;
-    }
 
     @Override
     public String toString(){

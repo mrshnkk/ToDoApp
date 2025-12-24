@@ -20,30 +20,33 @@ public class User{
     public String getEmail() {
         return email;
     }
-    public String getPasswordHash() {
-        return passwordHash;
-    }
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-    public void changePassword(String newPasswordHash){
-        this.passwordHash= newPasswordHash;
+    public void changePassword(String newPassword) {
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("Password too short");
+        }
+        this.passwordHash = hashPassword(newPassword);
     }
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-    public void setUsername(String username) {
-        this.username = username;
+    public static User createUser(String username, String email, String newPassword){
+        if (username == null ) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (email == null ) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("Password too short");
+        }
+        return new User(
+                username.trim(),
+                email.trim(),
+                hashPassword(newPassword)
+        );
     }
 
-    public static User createUser(String username, String email, String password){
-        String passwordHash= hashPassword(password);
-        LocalDateTime createdAt= LocalDateTime.now();
-        return new User(username, email, passwordHash);
-    }
+
     private static String hashPassword(String password){
         //TODO logic to hash the Password
         return password;
