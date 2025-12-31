@@ -15,11 +15,11 @@ public class TeamMemberEntity {
     private Long memberId;
     
     @ManyToOne(optional = false)
-    @JoinColumn(name = "Team_id")
+    @JoinColumn(name = "Team_Id", referencedColumnName= "TeamId")
     private TeamEntity team;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "User_id")
+    @JoinColumn(name = "User_Id", referencedColumnName= "UserId")
     private UserEntity user;
 
     @Enumerated(EnumType.STRING)
@@ -30,11 +30,11 @@ public class TeamMemberEntity {
     private LocalDateTime joinedAt;
 
     
-    public TeamMemberEntity(TeamEntity team, UserEntity user, TeamRole role){
+    public TeamMemberEntity(TeamEntity team, UserEntity user, TeamRole role, LocalDateTime joinedAt){
         this.team=team;
         this.user= user;
         this.role=role;
-        this.joinedAt=LocalDateTime.now();
+        this.joinedAt=joinedAt;
     }
     public TeamMemberEntity(){}
 

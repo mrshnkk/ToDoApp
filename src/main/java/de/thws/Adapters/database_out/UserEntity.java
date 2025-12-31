@@ -24,11 +24,11 @@ public class UserEntity {
 
     public UserEntity(){}
 
-    public UserEntity(String username, String email, String passwordHash){
+    public UserEntity(String username, String email, String passwordHash, LocalDateTime createdAt){
         this.username=username;
         this.email= email;
         this.passwordHash= passwordHash;
-        this.createdAt=LocalDateTime.now();
+        this.createdAt=createdAt;
     }
 
     public Long getUserId() {

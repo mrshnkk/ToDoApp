@@ -10,6 +10,7 @@ public class TeamEntity {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name="TeamId")
     private Long teamId;
 
     @Column(name="Team_Name", nullable= false)
@@ -29,10 +30,10 @@ public class TeamEntity {
     @JoinColumn(name = "owner_id", nullable = false)
     private UserEntity owner;
 
-    public TeamEntity(String teamName, UserEntity owner) {
+    public TeamEntity(String teamName, UserEntity owner, LocalDateTime createdAt) {
         this.teamName= teamName;
         this.owner = owner;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = createdAt;
     }
 
     public TeamEntity(){}

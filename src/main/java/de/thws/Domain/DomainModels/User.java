@@ -1,53 +1,91 @@
 package de.thws.Domain.DomainModels;
+
 import java.time.LocalDateTime;
 
-public class User{
+public class User {
     private String username; //identity of the user -> id is going to be generated in the persistence layer.
     private String email;
-    private String passwordHash;
+    private String password;
     private final LocalDateTime createdAt;
 
-    private User(String username, String email, String passwordHash) {
+    private User(String username, String email, String password) {
         this.username = username;
         this.email = email;
-        this.passwordHash = passwordHash;
+        this.password = password;
         this.createdAt = LocalDateTime.now();
     }
 
     public String getUsername() {
         return username;
     }
+
     public String getEmail() {
         return email;
     }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
     public void changePassword(String newPassword) {
         if (newPassword == null || newPassword.length() < 8) {
             throw new IllegalArgumentException("Password too short");
         }
-        this.passwordHash = hashPassword(newPassword);
+        this.password = hashPassword(newPassword);
     }
-    public static User createUser(String username, String email, String newPassword){
-        if (username == null ) {
+
+    public User createUser() {
+        if (username == null) {
             throw new IllegalArgumentException("Username is required");
         }
-        if (email == null ) {
+        if (username.length() < 4 || username.length() > 16) {
+            throw new IllegalArgumentException("Username has to be between 4 and 16 characters");
+        }
+        char[] check = this.username.toCharArray();
+        for (int i = 0; i < username.length(); i++) { //username validation;
+            if (check[i] == ' ') {
+                throw new IllegalArgumentException("Username should not contain spaces.");
+            } else {
+                i++;
+            }
+        }
+
+        if (email == null) {
             throw new IllegalArgumentException("Email is required");
         }
-        if (newPassword == null || newPassword.length() < 8) {
-            throw new IllegalArgumentException("Password too short");
+        int countAt = 0;
+        int countDot = 0;
+        char[] mailCheck = email.toCharArray();
+        for (int i = 0; i < email.length(); i++) {
+            if (mailCheck[i] == '@') {
+                countAt++;
+            }
+            if (mailCheck[i] == '.') {
+                countDot++;
+            }
+        }
+        if (countAt != 1 && countDot == 0) {
+            throw new IllegalArgumentException("Mail has to contain at and dot signs.");
+        }
+        if (email.length() < 8 || email.length() > 30){
+            throw new IllegalArgumentException("Mailaddress has to be longer than 8 characters or shorter than 30");
+        }
+
+        if (password.length() < 8 || password.length() > 25) {
+            throw new IllegalArgumentException("Password has to be between 8 and 25 characters");
+        }
+        if (password == null){
+            throw new IllegalArgumentException("Password can not be null");
         }
         return new User(
                 username.trim(),
                 email.trim(),
-                hashPassword(newPassword)
+                hashPassword(password)
         );
     }
 
 
-    private static String hashPassword(String password){
+    private static String hashPassword(String password) {
         //TODO logic to hash the Password
         return password;
     }
