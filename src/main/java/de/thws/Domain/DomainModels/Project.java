@@ -2,37 +2,83 @@ package de.thws.Domain.DomainModels;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Project {
-    private final Long projectId;
     String name;
     String description;
+    final List<Task> tasks = new ArrayList<>();
     LocalDateTime startDate;
     private LocalDate endDate;
-    private final Long ownerId;
+    private final User owner;
 
-    public Project(Long projectId, String name, String description, LocalDateTime startDate, LocalDate endDate, Long ownerId) {
-        this.projectId = projectId;
+
+
+    public Project(String name, User owner) {
+        if (name == null) {
+            throw new IllegalArgumentException("Project name is required");
+        }
+        if (owner == null) {
+            throw new IllegalArgumentException("Project must have an owner");
+        }
         this.name = name;
-        this.description = description;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.ownerId = ownerId;
+        this.owner = owner;
+        this.startDate = LocalDateTime.now();
     }
-    public void createProject(){
-        Project project = new Project(this.projectId, this.name, this.description, this.startDate, this.endDate, ownerId);
+
+
+
+    public void addTask(Task task){
+        if (task == null){
+            throw new IllegalArgumentException("Task cannot be null");
+        }
+        if (tasks.contains(task)){
+            throw new IllegalArgumentException("Task already exists");
+        }
+        tasks.add(task);
     }
-    public void updateProject(String name, String description, LocalDateTime startDate, LocalDate endDate){
-        this.name = name;
-        this.description = description;
-        this.startDate = startDate;
-        this.endDate = endDate;
+
+
+
+    public void deleteTask(Task task){
+        if (task == null){
+            throw new IllegalArgumentException("Task cannot be null");
+        }
+        boolean removed = tasks.remove(task);
+        if (!removed) {
+            throw new IllegalStateException("Task not found in this project");
+        }
     }
-    public void deleteProject(){
+
+
+
+    public void updateDescription(String newDescription) {
+        if (description == null) {
+            this.description = null;
+            return;
+        }
+        this.description = newDescription;
     }
-    public double getProgress() {
-        //TODO Progress count
-        return 0;
+
+    public List<Task> getTasks() {
+        return tasks;
     }
+
+
+
+    public User getOwner() {
+        return owner;
+    }
+
+    //TODO  calculateProgress
+    //public double calculateProgress() {}
+
+    //TODO hasActiveTasks
+    //public boolean hasActiveTasks(){}
+
+
+
+
 
 }

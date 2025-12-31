@@ -1,58 +1,58 @@
 package de.thws.Domain.DomainModels;
 
 import java.time.LocalDateTime;
+
 public class Notification {
-    Long reminderId;
-    Long taskId;
-    LocalDateTime reminderTime;
-    Boolean sent;
 
-    public Notification(Long reminderId, Long taskId, LocalDateTime reminderTime, Boolean sent) {
-        this.reminderId = reminderId;
-        this.taskId = taskId;
-        this.reminderTime = reminderTime;
-        this.sent = sent;
-    }
-    public Long getReminderId() {
-        return reminderId;
-    }
-    public void setReminderId(Long reminderId) {
-        this.reminderId = reminderId;
-    }
-    public Long getTaskId() {
-        return taskId;
-    }
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
-    }
-    public LocalDateTime getReminderTime() {
-        return reminderTime;
-    }
-    public void setReminderTime(LocalDateTime reminderTime) {
-        this.reminderTime = reminderTime;
-    }
-    public Boolean getSent() {
-        return sent;
-    }
-    public void setSent(Boolean sent) {
-        this.sent = sent;
-    }
+    private LocalDateTime reminderTime;
+    private ReminderStatus status;
 
-    public void scheduleReminder(LocalDateTime reminderTime) {
+
+    public Notification(LocalDateTime reminderTime, LocalDateTime now) {
         if (reminderTime == null) {
             throw new IllegalArgumentException("Reminder time cannot be null");
         }
-        this.reminderTime = reminderTime;
-        this.sent = false;
-    }
-    public void sendReminder() {
-        if (reminderTime== null){
-            throw new IllegalStateException("Reminder time cannot be null");
+        if (reminderTime.isBefore(now)) {
+            throw new IllegalArgumentException("Reminder time must be in the future");
         }
-        this.sent = true;
+        this.reminderTime = reminderTime;
+        this.status = ReminderStatus.SCHEDULED;
+
     }
-    public void cancelReminder() {
-        this.reminderTime = null;
-        this.sent = null;
+
+    public static Notification schedule(LocalDateTime reminderTime, LocalDateTime now) {
+        return new Notification(reminderTime, now);
+
+    }
+
+    public void markAsSent() {
+        if (status != ReminderStatus.SCHEDULED) {
+            throw new IllegalStateException("Only scheduled reminders can be sent");
+
+        }
+        this.status = ReminderStatus.SENT;
+
+    }
+
+
+    public boolean isDue(LocalDateTime now) {
+        return status == ReminderStatus.SCHEDULED
+                && !now.isBefore(reminderTime);
+
+    }
+
+    public void cancel() {
+        if (status == ReminderStatus.SENT) {
+            throw new IllegalStateException("Cannot cancel already sent reminder");
+        }
+        this.status = ReminderStatus.CANCELLED;
+    }
+
+    public ReminderStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getReminderTime() {
+        return reminderTime;
     }
 }
