@@ -158,13 +158,13 @@ public class Task {
 
     public void setDeadline(LocalDate newDeadline){
 
-        if (deadline == null){
+        if (newDeadline == null){
 
             throw new IllegalArgumentException("Deadline cannot be null");
 
         }
 
-        if (deadline.isBefore(LocalDate.now())){
+        if (newDeadline.isBefore(LocalDate.now())){
 
             throw new IllegalArgumentException("Deadline cannot be in the past");
 

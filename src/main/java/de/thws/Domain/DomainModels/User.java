@@ -1,5 +1,8 @@
 package de.thws.Domain.DomainModels;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 
 public class User {
@@ -86,9 +89,24 @@ public class User {
 
 
     private static String hashPassword(String password) {
-        //TODO logic to hash the Password
-        return password;
+        if (password == null) {
+            throw new IllegalArgumentException("Password can not be null");
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(hash.length * 2);
+            for (byte b : hash) {
+                String part = Integer.toHexString(b & 0xff);
+                if (part.length() == 1) {
+                    hex.append('0');
+                }
+                hex.append(part);
+            }
+            return hex.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
 }
-
 

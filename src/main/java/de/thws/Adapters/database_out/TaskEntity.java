@@ -78,6 +78,17 @@ public class TaskEntity {
 
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDeadline(LocalDate deadline) {
+        this.deadline = deadline;
+    }
+
+    public void setAssignedUser(UserEntity user) {
+        this.assignedUser = user;
+    }
 
 
     public Long getTaskId() {
