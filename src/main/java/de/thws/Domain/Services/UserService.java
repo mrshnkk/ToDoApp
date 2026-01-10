@@ -1,6 +1,7 @@
 package de.thws.Domain.Services;
 
-import de.thws.fiw.backendsystems.domain.ports.OutToDoApp.UserRepository;
+import de.thws.Domain.DomainModels.User;
+import de.thws.Ports.output.UserRepository;
 
 import java.util.Optional;
 
@@ -41,6 +42,4 @@ public class UserService {
         }
         userRepo.deleteById(userId);
     }
-
-
 }
