@@ -5,7 +5,6 @@ import de.thws.Application.Ports.out.*;
 import java.time.LocalDate;
 
 public class TaskService {
-
     private final TaskRepository taskRepo;
     private final UserRepository userRepo;
 

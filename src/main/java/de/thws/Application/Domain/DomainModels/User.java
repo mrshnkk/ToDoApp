@@ -6,17 +6,22 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 
 public class User {
-    private String username; //identity of the user -> id is going to be generated in the persistence layer.
+    private String username; //identity of the user model -> id is going to be generated in the persistence layer.
     private String email;
     private String password;
     private final LocalDateTime createdAt;
 
-    private User(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.createdAt = LocalDateTime.now();
-    }
+    public User(String username, String email, String password) {
+        validateEmail(email);
+        validateUsername(username);
+        validatePassword(password);
+
+            this.username = username;
+            this.email = email;
+            this.password = hashPassword(password);
+            this.createdAt = LocalDateTime.now();
+        }
+
 
     public String getUsername() {
         return username;
@@ -30,14 +35,49 @@ public class User {
         return createdAt;
     }
 
-    public void changePassword(String newPassword) {
-        if (newPassword == null || newPassword.length() < 8) {
-            throw new IllegalArgumentException("Password too short");
-        }
+    public void changePassword (String newPassword){
+        validatePassword(newPassword);
         this.password = hashPassword(newPassword);
     }
 
-    public User createUser() {
+    public void changeUsername(String newUsername){
+        validateUsername(newUsername);
+        this.username=newUsername;
+    }
+
+    public void changeEmail(String newEmail){
+        validateUsername(newEmail);
+        this.email=newEmail;
+    }
+
+    public void validatePassword(String password) {
+        if (password == null) {
+            throw new IllegalArgumentException("Password can not be null");
+        }
+        if (password.length() < 8 || password.length() > 25) {
+            throw new IllegalArgumentException("Password has to be between 8 and 25 characters");
+        }
+        boolean hasLowerCase = false;
+        boolean hasUpperCase = false;
+        boolean hasSpecialChar = false;
+
+        for (int i = 0; i < password.length(); i++) {
+            char c = password.charAt(i);
+
+            if (c >= 'a' && c <= 'z') {
+                hasLowerCase = true;
+            } else if (c >= 'A' && c <= 'Z') {
+                hasUpperCase = true;
+            } else if (!Character.isDigit(c)) {
+                hasSpecialChar = true;
+            }
+        }
+            if (!hasLowerCase || !hasUpperCase || !hasSpecialChar) {
+                throw new IllegalArgumentException("Password must contain at least one lowercase letter, one uppercase letter and one special character");
+            }
+    }
+
+    public void  validateUsername(String username){
         if (username == null) {
             throw new IllegalArgumentException("Username is required");
         }
@@ -52,7 +92,9 @@ public class User {
                 i++;
             }
         }
+    }
 
+    public void validateEmail(String email) {
         if (email == null) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -70,43 +112,30 @@ public class User {
         if (countAt != 1 && countDot == 0) {
             throw new IllegalArgumentException("Mail has to contain at and dot signs.");
         }
-        if (email.length() < 8 || email.length() > 30){
-            throw new IllegalArgumentException("Mailaddress has to be longer than 8 characters or shorter than 30");
+        if (email.length() < 8 || email.length() > 30) {
+            throw new IllegalArgumentException("Mail Address has to be longer than 8 characters or shorter than 30");
         }
-
-        if (password.length() < 8 || password.length() > 25) {
-            throw new IllegalArgumentException("Password has to be between 8 and 25 characters");
-        }
-        if (password == null){
-            throw new IllegalArgumentException("Password can not be null");
-        }
-        return new User(
-                username.trim(),
-                email.trim(),
-                hashPassword(password)
-        );
     }
 
-
-    private static String hashPassword(String password) {
-        if (password == null) {
-            throw new IllegalArgumentException("Password can not be null");
-        }
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hex = new StringBuilder(hash.length * 2);
-            for (byte b : hash) {
-                String part = Integer.toHexString(b & 0xff);
-                if (part.length() == 1) {
-                    hex.append('0');
-                }
-                hex.append(part);
+        private static String hashPassword (String password){
+            if (password == null) {
+                throw new IllegalArgumentException("Password can not be null");
             }
-            return hex.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
+            try {
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+                StringBuilder hex = new StringBuilder(hash.length * 2);
+                for (byte b : hash) {
+                    String part = Integer.toHexString(b & 0xff);
+                    if (part.length() == 1) {
+                        hex.append('0');
+                    }
+                    hex.append(part);
+                }
+                return hex.toString();
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("SHA-256 not available", e);
+            }
         }
     }
-}
 
