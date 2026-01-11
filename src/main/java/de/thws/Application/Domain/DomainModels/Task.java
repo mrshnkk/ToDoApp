@@ -104,8 +104,13 @@ public class Task {
 
 
 
-    public void changeStatus(TaskStatus newStatus){
-
+    public void changeStatus(TaskStatus newStatus) {
+        if (newStatus == null) {
+            throw new IllegalArgumentException("Status must not be null");
+        }
+        if (this.status == TaskStatus.DONE && newStatus == TaskStatus.TODO) {
+            throw new IllegalStateException("Cannot change status from DONE back to TODO");
+        }
         this.status = newStatus;
 
         touch();
