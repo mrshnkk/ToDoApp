@@ -1,6 +1,7 @@
 package de.thws.Application.Domain.Services;
 
 import de.thws.Application.Domain.DomainModels.*;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,6 +11,8 @@ public class TaskFilter {
     private final String priority;
     private final Project project;
     private final Set<String> tags;
+    private final LocalDate dueDate;
+    private final Long teamId;
 
     public TaskFilter(String status, String priority, Project project, Set<String> tags) {
         this.status = status;
@@ -20,6 +23,27 @@ public class TaskFilter {
         } else {
             this.tags = new HashSet<>(tags);
         }
+        this.dueDate = null;
+        this.teamId = null;
+    }
+
+    public TaskFilter(
+            String status,
+            String priority,
+            Project project,
+            Set<String> tags,
+            LocalDate dueDate,
+            Long teamId) {
+        this.status = status;
+        this.priority = priority;
+        this.project = project;
+        if (tags == null) {
+            this.tags = Collections.emptySet();
+        } else {
+            this.tags = new HashSet<>(tags);
+        }
+        this.dueDate = dueDate;
+        this.teamId = teamId;
     }
 
     public TaskStatus parseStatus() {
@@ -68,5 +92,13 @@ public class TaskFilter {
             normalized.add(tag.trim().toLowerCase());
         }
         return normalized;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public Long getTeamId() {
+        return teamId;
     }
 }

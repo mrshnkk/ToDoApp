@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Project {
+    private Long projectId;
     String name;
     String description;
     final List<Task> tasks = new ArrayList<>();
     LocalDateTime startDate;
     private LocalDate endDate;
     private final User owner;
+    private Long teamId;
 
     public Project(String name, User owner) {
         if (name == null) {
@@ -67,6 +69,14 @@ public class Project {
 
     public User getOwner() {
         return owner;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public Long getTeamId() {
+        return teamId;
     }
 
     //TODO  calculateProgress

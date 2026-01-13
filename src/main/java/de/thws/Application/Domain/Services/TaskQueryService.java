@@ -2,6 +2,7 @@ package de.thws.Application.Domain.Services;
 
 import de.thws.Application.Domain.DomainModels.*;
 import de.thws.Application.Ports.out.TaskRepository;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +31,8 @@ public class TaskQueryService {
         TaskPriority priority = filter.parsePriority();
         Project project = filter.getProject();
         Set<String> tags = filter.normalizedTags();
+        LocalDate dueDate = filter.getDueDate();
+        Long teamId = filter.getTeamId();
 
         if (safeTasks.isEmpty()) {
             return Collections.emptyList();
@@ -44,9 +47,27 @@ public class TaskQueryService {
             if (priority != null && taskPriority != priority) {
                 continue;
             }
+            Project taskProject = null;
+            if (project != null || teamId != null) {
+                taskProject = TaskFieldAccessor.getProject(task);
+            }
             if (project != null) {
-                Project taskProject = TaskFieldAccessor.getProject(task);
                 if (taskProject == null || !taskProject.equals(project)) {
+                    continue;
+                }
+            }
+            if (dueDate != null) {
+                LocalDate taskDueDate = TaskFieldAccessor.getDueDate(task);
+                if (taskDueDate == null || !taskDueDate.equals(dueDate)) {
+                    continue;
+                }
+            }
+            if (teamId != null) {
+                if (taskProject == null) {
+                    continue;
+                }
+                Long taskTeamId = taskProject.getTeamId();
+                if (taskTeamId == null || !taskTeamId.equals(teamId)) {
                     continue;
                 }
             }

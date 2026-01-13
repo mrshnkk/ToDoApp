@@ -17,7 +17,27 @@ public class TeamService {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new UserNotFoundException("Owner not found: " + ownerId));
 
-        Team team = new Team(teamName, owner);
+        Team team = new Team(teamName, description, owner);
+
+        if (memberUsernames != null) {
+            for (String username : memberUsernames) {
+                addMemberByUsername(team, username);
+            }
+        }
+
+        teamRepository.save(team);
+        return team;
+    }
+
+    public Team addMembersByUsername(Long teamId, List<String> memberUsernames) {
+        if (teamId == null) {
+            throw new IllegalArgumentException("Team id is required");
+        }
+
+        Team team = teamRepository.findById(teamId);
+        if (team == null) {
+            throw new TeamNotFoundException("Team not found: " + teamId);
+        }
 
         if (memberUsernames != null) {
             for (String username : memberUsernames) {

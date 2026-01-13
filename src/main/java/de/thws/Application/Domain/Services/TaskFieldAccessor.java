@@ -2,6 +2,7 @@ package de.thws.Application.Domain.Services;
 
 import de.thws.Application.Domain.DomainModels.*;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ public final class TaskFieldAccessor {
     private static final Field PRIORITY_FIELD = getField("priority");
     private static final Field PROJECT_FIELD = getField("project");
     private static final Field TAGS_FIELD = getField("tags");
+    private static final Field DEADLINE_FIELD = getField("deadline");
 
     private TaskFieldAccessor() {
     }
@@ -19,6 +21,18 @@ public final class TaskFieldAccessor {
 
     public static Project getProject(Task task) {
         return readField(task, PROJECT_FIELD, Project.class);
+    }
+
+    public static LocalDate getDueDate(Task task) {
+        return readField(task, DEADLINE_FIELD, LocalDate.class);
+    }
+
+    public static Long getProjectId(Task task) {
+        Project project = getProject(task);
+        if (project == null) {
+            return null;
+        }
+        return project.getProjectId();
     }
 
     public static Set<String> getTags(Task task) {

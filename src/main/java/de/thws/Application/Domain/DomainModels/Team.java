@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Team {
+    private Long teamId;
     private String teamName;
+    private String description;
     private List<TeamMember> teamMembers;
     private final LocalDateTime createdAt;
     private final User owner;
@@ -16,6 +18,11 @@ public class Team {
         this.owner = owner;
         this.teamMembers = new ArrayList<>();
         this.teamMembers.add(new TeamMember(owner, TeamRole.OWNER));
+    }
+
+    public Team(String teamName, String description, User owner) {
+        this(teamName, owner);
+        this.description = description;
     }
 
 
@@ -45,6 +52,14 @@ public class Team {
 
     public List<TeamMember> getTeamMembers() {
         return teamMembers;
+    }
+
+    public Long getTeamId() {
+        return teamId;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
 
