@@ -54,7 +54,7 @@ public class Project {
 
 
     public void updateDescription(String newDescription) {
-        if (description == null) {
+        if (newDescription == null) {
             this.description = null;
             return;
         }
@@ -65,6 +65,21 @@ public class Project {
         return tasks;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDateTime getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
 
 
     public User getOwner() {
@@ -75,8 +90,22 @@ public class Project {
         return projectId;
     }
 
+    public void setProjectId(Long projectId) {
+        if (this.projectId != null) {
+            throw new IllegalStateException("Project ID already set");
+        }
+        this.projectId = projectId;
+    }
+
     public Long getTeamId() {
         return teamId;
+    }
+
+    public void setTeamId(Long teamId) {
+        if (this.teamId != null) {
+            throw new IllegalStateException("Team ID already set");
+        }
+        this.teamId = teamId;
     }
 
     //TODO  calculateProgress

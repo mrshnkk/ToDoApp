@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 
 public class User {
+    private Long userId;
     private String username; //identity of the user model -> id is going to be generated in the persistence layer.
     private String email;
     private String password;
@@ -22,13 +23,40 @@ public class User {
             this.createdAt = LocalDateTime.now();
         }
 
+    private User(Long userId, String username, String email, String passwordHash, LocalDateTime createdAt) {
+        this.userId = userId;
+        this.username = username;
+        this.email = email;
+        this.password = passwordHash;
+        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+    }
+
+    public static User fromPersisted(Long userId, String username, String email, String passwordHash, LocalDateTime createdAt) {
+        return new User(userId, username, email, passwordHash, createdAt);
+    }
+
 
     public String getUsername() {
         return username;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        if (this.userId != null) {
+            throw new IllegalStateException("User ID already set");
+        }
+        this.userId = userId;
+    }
+
     public String getEmail() {
         return email;
+    }
+
+    public String getPasswordHash() {
+        return password;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -46,7 +74,7 @@ public class User {
     }
 
     public void changeEmail(String newEmail){
-        validateUsername(newEmail);
+        validateEmail(newEmail);
         this.email=newEmail;
     }
 
@@ -84,7 +112,7 @@ public class User {
         if (username.length() < 4 || username.length() > 16) {
             throw new IllegalArgumentException("Username has to be between 4 and 16 characters");
         }
-        char[] check = this.username.toCharArray();
+        char[] check = username.toCharArray();
         for (int i = 0; i < username.length(); i++) { //username validation;
             if (check[i] == ' ') {
                 throw new IllegalArgumentException("Username should not contain spaces.");
@@ -138,4 +166,3 @@ public class User {
             }
         }
     }
-

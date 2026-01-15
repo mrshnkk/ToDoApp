@@ -10,6 +10,7 @@ import java.util.Set;
 
 
 public class Task {
+    private Long taskId;
     private String title;
     private String description;
     private LocalDate deadline;
@@ -129,6 +130,45 @@ public class Task {
 
     public String getTitle() {
         return title;
+    }
+
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Long taskId) {
+        if (this.taskId != null) {
+            throw new IllegalStateException("Task ID already set");
+        }
+        this.taskId = taskId;
+    }
+
+    public User getAssignedUser() {
+        return assignedUser;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDate getDeadline() {
+        return deadline;
+    }
+
+    public TaskPriority getPriority() {
+        return priority;
+    }
+
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
 

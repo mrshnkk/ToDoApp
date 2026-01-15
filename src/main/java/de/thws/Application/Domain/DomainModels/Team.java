@@ -54,12 +54,31 @@ public class Team {
         return teamMembers;
     }
 
+    public String getTeamName() {
+        return teamName;
+    }
+
     public Long getTeamId() {
         return teamId;
     }
 
+    public void setTeamId(Long teamId) {
+        if (this.teamId != null) {
+            throw new IllegalStateException("Team ID already set");
+        }
+        this.teamId = teamId;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public User getOwner() {
+        return owner;
     }
 
 
