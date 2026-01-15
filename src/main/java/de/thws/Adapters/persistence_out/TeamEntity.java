@@ -16,6 +16,9 @@ public class TeamEntity {
     @Column(name="Team_Name", nullable= false)
     private String teamName;
 
+    @Column(name="Description", length = 1000)
+    private String description;
+
     @Column(name="Creation_date", nullable = false)
     private LocalDateTime createdAt;
 
@@ -39,6 +42,38 @@ public class TeamEntity {
     public TeamEntity(){}
     public UserEntity getOwner() {
         return owner;
+    }
+
+    public Long getTeamId() {
+        return teamId;
+    }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setOwner(UserEntity owner) {
+        this.owner = owner;
     }
 
     public void setTeamId(Long id) {

@@ -24,19 +24,22 @@ public class ProjectEntity {
 
 
     @OneToMany(
-            mappedBy = "Project",
+            mappedBy = "project",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<TaskEntity> tasks = new ArrayList<>();
 
 
-    @Column(name = "Ending_Time", nullable = false)
+    @Column(name = "Ending_Time")
     private LocalDate endDate;
 
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private UserEntity owner;
+
+    @Column(name = "team_id")
+    private Long teamId;
 
 
     public ProjectEntity() {}
@@ -65,6 +68,10 @@ public class ProjectEntity {
         return owner;
     }
 
+    public Long getTeamId() {
+        return teamId;
+    }
+
     public LocalDate getEndDate() {
         return endDate;
 
@@ -73,6 +80,26 @@ public class ProjectEntity {
     public List<TaskEntity> getTasks() {
         return tasks;
 
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public void setOwner(UserEntity owner) {
+        this.owner = owner;
+    }
+
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
     }
 
 }

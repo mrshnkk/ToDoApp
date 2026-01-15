@@ -90,6 +90,26 @@ public class TaskEntity {
         this.assignedUser = user;
     }
 
+    public void setProject(ProjectEntity project) {
+        this.project = project;
+    }
+
+    public void setPriority(TaskPriority priority) {
+        this.priority = priority;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
 
     public Long getTaskId() {
         return taskId;
@@ -113,6 +133,30 @@ public class TaskEntity {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDate getDeadline() {
+        return deadline;
+    }
+
+    public ProjectEntity getProject() {
+        return project;
+    }
+
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public UserEntity getAssignedUser() {
+        return assignedUser;
     }
 
 
