@@ -1,7 +1,10 @@
 package de.thws.Adapters.web_in;
 
+import de.thws.Adapters.web_in.dto.ProjectCreateRequest;
 import de.thws.Application.Domain.DomainModels.Project;
+import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.ProjectUseCase;
+import de.thws.Application.Ports.in.UserUseCase;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -24,6 +27,9 @@ public class ProjectController {
     @Inject
     ProjectUseCase projectUseCase;
 
+    @Inject
+    UserUseCase userUseCase;
+
     @GET
     @Path("/{id}")
     public Project getById(@PathParam("id") Long id) {
@@ -42,7 +48,16 @@ public class ProjectController {
     }
 
     @POST
-    public Project create(Project project) {
+    public Project create(ProjectCreateRequest request) {
+        User owner = userUseCase.findById(request.getOwnerId())
+                .orElseThrow(NotFoundException::new);
+        Project project = new Project(request.getName(), owner);
+        if (request.getDescription() != null) {
+            project.updateDescription(request.getDescription());
+        }
+        if (request.getTeamId() != null) {
+            project.setTeamId(request.getTeamId());
+        }
         return projectUseCase.create(project);
     }
 

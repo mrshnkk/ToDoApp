@@ -1,5 +1,6 @@
 package de.thws.Adapters.web_in;
 
+import de.thws.Adapters.web_in.dto.UserCreateRequest;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.UserUseCase;
 import jakarta.inject.Inject;
@@ -40,7 +41,8 @@ public class UserController {
     }
 
     @POST
-    public User create(User user) {
+    public User create(UserCreateRequest request) {
+        User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
         return userUseCase.create(user);
     }
 

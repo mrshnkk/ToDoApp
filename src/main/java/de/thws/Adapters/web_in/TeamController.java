@@ -1,7 +1,10 @@
 package de.thws.Adapters.web_in;
 
+import de.thws.Adapters.web_in.dto.TeamCreateRequest;
 import de.thws.Application.Domain.DomainModels.Team;
+import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.TeamUseCase;
+import de.thws.Application.Ports.in.UserUseCase;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -24,6 +27,9 @@ public class TeamController {
     @Inject
     TeamUseCase teamUseCase;
 
+    @Inject
+    UserUseCase userUseCase;
+
     @GET
     @Path("/{id}")
     public Team getById(@PathParam("id") Long id) {
@@ -42,7 +48,12 @@ public class TeamController {
     }
 
     @POST
-    public Team create(Team team) {
+    public Team create(TeamCreateRequest request) {
+        User owner = userUseCase.findById(request.getOwnerId())
+                .orElseThrow(NotFoundException::new);
+        Team team = request.getDescription() == null
+                ? new Team(request.getTeamName(), owner)
+                : new Team(request.getTeamName(), request.getDescription(), owner);
         return teamUseCase.create(team);
     }
 
