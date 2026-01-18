@@ -69,6 +69,17 @@ class TaskControllerIT {
                 .body("taskId", hasItem(taskId));
 
         given()
+                .queryParam("assignedUserId", assigneeId)
+                .queryParam("tags", "urgent")
+                .queryParam("page", 0)
+                .queryParam("size", 5)
+                .when()
+                .get("/tasks")
+                .then()
+                .statusCode(200)
+                .body("taskId", hasItem(taskId));
+
+        given()
                 .contentType("application/json")
                 .body(Map.of("title", "Task IT Updated"))
                 .when()

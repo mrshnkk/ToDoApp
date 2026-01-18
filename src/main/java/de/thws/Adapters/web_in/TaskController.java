@@ -5,10 +5,12 @@ import de.thws.Adapters.web_in.dto.TaskUpdateRequest;
 import de.thws.Application.Domain.DomainModels.Project;
 import de.thws.Application.Domain.DomainModels.Task;
 import de.thws.Application.Domain.DomainModels.User;
+import de.thws.Application.Domain.Services.TaskFilter;
 import de.thws.Application.Ports.in.ProjectUseCase;
 import de.thws.Application.Ports.in.TaskUseCase;
 import de.thws.Application.Ports.in.UserUseCase;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -18,9 +20,13 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Path("/tasks")
 @Produces(MediaType.APPLICATION_JSON)
@@ -44,14 +50,47 @@ public class TaskController {
 
     @GET
     @Path("/project/{projectId}")
-    public List<Task> getByProject(@PathParam("projectId") Long projectId) {
-        return taskUseCase.findByProjectId(projectId);
+    public List<Task> getByProject(
+            @PathParam("projectId") Long projectId,
+            @QueryParam("page") Integer page,
+            @QueryParam("size") Integer size) {
+        return paginate(taskUseCase.findByProjectId(projectId), page, size);
     }
 
     @GET
     @Path("/assigned/{userId}")
-    public List<Task> getByAssignedUser(@PathParam("userId") Long userId) {
-        return taskUseCase.findByAssignedUserId(userId);
+    public List<Task> getByAssignedUser(
+            @PathParam("userId") Long userId,
+            @QueryParam("page") Integer page,
+            @QueryParam("size") Integer size) {
+        return paginate(taskUseCase.findByAssignedUserId(userId), page, size);
+    }
+
+    @GET
+    public List<Task> queryTasks(
+            @QueryParam("assignedUserId") Long assignedUserId,
+            @QueryParam("status") String status,
+            @QueryParam("priority") String priority,
+            @QueryParam("projectId") Long projectId,
+            @QueryParam("tags") String tags,
+            @QueryParam("dueDate") String dueDate,
+            @QueryParam("teamId") Long teamId,
+            @QueryParam("page") Integer page,
+            @QueryParam("size") Integer size) {
+        if (assignedUserId == null) {
+            throw new BadRequestException("assignedUserId is required");
+        }
+        Project project = null;
+        if (projectId != null) {
+            project = projectUseCase.findById(projectId).orElseThrow(NotFoundException::new);
+        }
+        LocalDate dueDateValue = null;
+        if (dueDate != null) {
+            dueDateValue = LocalDate.parse(dueDate);
+        }
+        Set<String> tagSet = parseTags(tags);
+        TaskFilter filter = new TaskFilter(status, priority, project, tagSet, dueDateValue, teamId);
+        return paginate(taskUseCase.queryForUser(assignedUserId, filter), page, size);
     }
 
     @POST
@@ -129,5 +168,34 @@ public class TaskController {
     @Path("/{id}")
     public void delete(@PathParam("id") Long id) {
         taskUseCase.delete(id);
+    }
+
+    private static Set<String> parseTags(String tags) {
+        if (tags == null || tags.trim().isEmpty()) {
+            return Set.of();
+        }
+        String[] parts = tags.split(",");
+        Set<String> result = new HashSet<>();
+        for (String part : parts) {
+            String tag = part.trim();
+            if (!tag.isEmpty()) {
+                result.add(tag);
+            }
+        }
+        return result;
+    }
+
+    private static <T> List<T> paginate(List<T> items, Integer page, Integer size) {
+        if (items == null || items.isEmpty()) {
+            return List.of();
+        }
+        int safePage = page == null ? 0 : Math.max(0, page);
+        int safeSize = size == null ? 20 : Math.max(1, size);
+        int fromIndex = safePage * safeSize;
+        if (fromIndex >= items.size()) {
+            return List.of();
+        }
+        int toIndex = Math.min(items.size(), fromIndex + safeSize);
+        return items.subList(fromIndex, toIndex);
     }
 }

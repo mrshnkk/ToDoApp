@@ -39,14 +39,32 @@ public class TeamController {
     }
 
     @GET
-    public List<Team> getByQuery(@QueryParam("ownerId") Long ownerId, @QueryParam("userId") Long userId) {
+    public List<Team> getByQuery(
+            @QueryParam("ownerId") Long ownerId,
+            @QueryParam("userId") Long userId,
+            @QueryParam("page") Integer page,
+            @QueryParam("size") Integer size) {
         if (ownerId != null) {
-            return teamUseCase.findByOwnerId(ownerId);
+            return paginate(teamUseCase.findByOwnerId(ownerId), page, size);
         }
         if (userId != null) {
-            return teamUseCase.findByUserId(userId);
+            return paginate(teamUseCase.findByUserId(userId), page, size);
         }
         return List.of();
+    }
+
+    private static <T> List<T> paginate(List<T> items, Integer page, Integer size) {
+        if (items == null || items.isEmpty()) {
+            return List.of();
+        }
+        int safePage = page == null ? 0 : Math.max(0, page);
+        int safeSize = size == null ? 20 : Math.max(1, size);
+        int fromIndex = safePage * safeSize;
+        if (fromIndex >= items.size()) {
+            return List.of();
+        }
+        int toIndex = Math.min(items.size(), fromIndex + safeSize);
+        return items.subList(fromIndex, toIndex);
     }
 
     @POST

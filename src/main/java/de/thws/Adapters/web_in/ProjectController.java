@@ -39,14 +39,32 @@ public class ProjectController {
     }
 
     @GET
-    public List<Project> getByQuery(@QueryParam("ownerId") Long ownerId, @QueryParam("teamId") Long teamId) {
+    public List<Project> getByQuery(
+            @QueryParam("ownerId") Long ownerId,
+            @QueryParam("teamId") Long teamId,
+            @QueryParam("page") Integer page,
+            @QueryParam("size") Integer size) {
         if (ownerId != null) {
-            return projectUseCase.findByOwnerId(ownerId);
+            return paginate(projectUseCase.findByOwnerId(ownerId), page, size);
         }
         if (teamId != null) {
-            return projectUseCase.findByTeamId(teamId);
+            return paginate(projectUseCase.findByTeamId(teamId), page, size);
         }
         return List.of();
+    }
+
+    private static <T> List<T> paginate(List<T> items, Integer page, Integer size) {
+        if (items == null || items.isEmpty()) {
+            return List.of();
+        }
+        int safePage = page == null ? 0 : Math.max(0, page);
+        int safeSize = size == null ? 20 : Math.max(1, size);
+        int fromIndex = safePage * safeSize;
+        if (fromIndex >= items.size()) {
+            return List.of();
+        }
+        int toIndex = Math.min(items.size(), fromIndex + safeSize);
+        return items.subList(fromIndex, toIndex);
     }
 
     @POST
