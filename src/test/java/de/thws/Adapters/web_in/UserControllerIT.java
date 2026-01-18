@@ -1,0 +1,38 @@
+package de.thws.Adapters.web_in;
+
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+
+@QuarkusTest
+class UserControllerIT {
+
+    @Test
+    void createAndFetchUser() {
+        Long userId = given()
+                .contentType("application/json")
+                .body(Map.of(
+                        "username", "userit1",
+                        "email", "userit1@test.com",
+                        "password", "Abcdef!1"))
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(200)
+                .body("userId", notNullValue())
+                .extract()
+                .path("userId");
+
+        given()
+                .when()
+                .get("/users/" + userId)
+                .then()
+                .statusCode(200)
+                .body("username", equalTo("userit1"));
+    }
+}
