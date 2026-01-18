@@ -14,7 +14,7 @@ class UserControllerIT {
 
     @Test
     void createAndFetchUser() {
-        Long userId = given()
+        Long userId = ((Number) given()
                 .contentType("application/json")
                 .body(Map.of(
                         "username", "userit1",
@@ -26,7 +26,7 @@ class UserControllerIT {
                 .statusCode(200)
                 .body("userId", notNullValue())
                 .extract()
-                .path("userId");
+                .path("userId")).longValue();
 
         given()
                 .when()

@@ -17,7 +17,7 @@ class TeamControllerIT {
     void createAndQueryTeam() {
         Long ownerId = createUser("teamit1", "teamit1@test.com");
 
-        Long teamId = given()
+        Long teamId = ((Number) given()
                 .contentType("application/json")
                 .body(Map.of(
                         "teamName", "Team IT",
@@ -29,7 +29,7 @@ class TeamControllerIT {
                 .statusCode(200)
                 .body("teamId", notNullValue())
                 .extract()
-                .path("teamId");
+                .path("teamId")).longValue();
 
         given()
                 .when()
@@ -44,7 +44,7 @@ class TeamControllerIT {
                 .get("/teams")
                 .then()
                 .statusCode(200)
-                .body("teamId", hasItem(teamId));
+                .body("teamId", hasItem(teamId.intValue()));
 
         given()
                 .contentType("application/json")
@@ -57,7 +57,7 @@ class TeamControllerIT {
     }
 
     private static Long createUser(String username, String email) {
-        return given()
+        return ((Number) given()
                 .contentType("application/json")
                 .body(Map.of(
                         "username", username,
@@ -68,6 +68,6 @@ class TeamControllerIT {
                 .then()
                 .statusCode(200)
                 .extract()
-                .path("userId");
+                .path("userId")).longValue();
     }
 }

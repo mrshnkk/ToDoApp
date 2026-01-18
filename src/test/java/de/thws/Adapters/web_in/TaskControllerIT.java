@@ -19,7 +19,7 @@ class TaskControllerIT {
         Long ownerId = createUser("taskownerit1", "taskownerit1@test.com");
         Long assigneeId = createUser("taskassigneeit1", "taskassigneeit1@test.com");
 
-        Long projectId = given()
+        Long projectId = ((Number) given()
                 .contentType("application/json")
                 .body(Map.of(
                         "name", "Task Project IT",
@@ -29,9 +29,9 @@ class TaskControllerIT {
                 .then()
                 .statusCode(200)
                 .extract()
-                .path("projectId");
+                .path("projectId")).longValue();
 
-        Long taskId = given()
+        Long taskId = ((Number) given()
                 .contentType("application/json")
                 .body(Map.of(
                         "title", "Task IT",
@@ -45,7 +45,7 @@ class TaskControllerIT {
                 .statusCode(200)
                 .body("taskId", notNullValue())
                 .extract()
-                .path("taskId");
+                .path("taskId")).longValue();
 
         given()
                 .when()
@@ -59,14 +59,14 @@ class TaskControllerIT {
                 .get("/tasks/project/" + projectId)
                 .then()
                 .statusCode(200)
-                .body("taskId", hasItem(taskId));
+                .body("taskId", hasItem(taskId.intValue()));
 
         given()
                 .when()
                 .get("/tasks/assigned/" + assigneeId)
                 .then()
                 .statusCode(200)
-                .body("taskId", hasItem(taskId));
+                .body("taskId", hasItem(taskId.intValue()));
 
         given()
                 .queryParam("assignedUserId", assigneeId)
@@ -77,7 +77,7 @@ class TaskControllerIT {
                 .get("/tasks")
                 .then()
                 .statusCode(200)
-                .body("taskId", hasItem(taskId));
+                .body("taskId", hasItem(taskId.intValue()));
 
         given()
                 .contentType("application/json")
@@ -90,7 +90,7 @@ class TaskControllerIT {
     }
 
     private static Long createUser(String username, String email) {
-        return given()
+        return ((Number) given()
                 .contentType("application/json")
                 .body(Map.of(
                         "username", username,
@@ -101,6 +101,6 @@ class TaskControllerIT {
                 .then()
                 .statusCode(200)
                 .extract()
-                .path("userId");
+                .path("userId")).longValue();
     }
 }

@@ -17,7 +17,7 @@ class ProjectControllerIT {
     void createAndQueryProject() {
         Long ownerId = createUser("projit1", "projit1@test.com");
 
-        Long projectId = given()
+        Long projectId = ((Number) given()
                 .contentType("application/json")
                 .body(Map.of(
                         "name", "Project IT",
@@ -30,7 +30,7 @@ class ProjectControllerIT {
                 .statusCode(200)
                 .body("projectId", notNullValue())
                 .extract()
-                .path("projectId");
+                .path("projectId")).longValue();
 
         given()
                 .when()
@@ -45,7 +45,7 @@ class ProjectControllerIT {
                 .get("/projects")
                 .then()
                 .statusCode(200)
-                .body("projectId", hasItem(projectId));
+                .body("projectId", hasItem(projectId.intValue()));
 
         given()
                 .contentType("application/json")
@@ -58,7 +58,7 @@ class ProjectControllerIT {
     }
 
     private static Long createUser(String username, String email) {
-        return given()
+        return ((Number) given()
                 .contentType("application/json")
                 .body(Map.of(
                         "username", username,
@@ -69,6 +69,6 @@ class ProjectControllerIT {
                 .then()
                 .statusCode(200)
                 .extract()
-                .path("userId");
+                .path("userId")).longValue();
     }
 }
