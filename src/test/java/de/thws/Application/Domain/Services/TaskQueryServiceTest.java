@@ -31,7 +31,7 @@ class TaskQueryServiceTest {
         List<Task> result = service.getTasksForUser(userId, filter);
 
         assertEquals(1, result.size());
-        assertEquals("Task A", result.getFirst().getTitle());
+        assertEquals("Task A", result.get(0).getTitle());
     }
 
     @Test
@@ -60,7 +60,7 @@ class TaskQueryServiceTest {
         List<Task> result = service.getTasksForUser(userId, filter);
 
         assertEquals(1, result.size());
-        assertEquals("Team One Task", result.getFirst().getTitle());
+        assertEquals("Team One Task", result.get(0).getTitle());
     }
 
     private static TaskQueryService serviceWithTasks(Long userId, List<Task> tasks) {
