@@ -25,6 +25,12 @@ public class TaskUseCaseImpl implements TaskUseCase {
     }
 
     @Override
+    public Task update(Task task) {
+        taskRepository.save(task);
+        return task;
+    }
+
+    @Override
     public Optional<Task> findById(Long taskId) {
         return Optional.ofNullable(taskRepository.findById(taskId));
     }

@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface ProjectUseCase {
     Project create(Project project);
+    Project update(Project project);
     Optional<Project> findById(Long projectId);
     List<Project> findByOwnerId(Long ownerId);
     List<Project> findByTeamId(Long teamId);

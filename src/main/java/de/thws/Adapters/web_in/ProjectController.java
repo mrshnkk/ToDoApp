@@ -1,6 +1,7 @@
 package de.thws.Adapters.web_in;
 
 import de.thws.Adapters.web_in.dto.ProjectCreateRequest;
+import de.thws.Adapters.web_in.dto.ProjectUpdateRequest;
 import de.thws.Application.Domain.DomainModels.Project;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.ProjectUseCase;
@@ -11,6 +12,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -59,6 +61,25 @@ public class ProjectController {
             project.setTeamId(request.getTeamId());
         }
         return projectUseCase.create(project);
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Project update(@PathParam("id") Long id, ProjectUpdateRequest request) {
+        Project project = projectUseCase.findById(id).orElseThrow(NotFoundException::new);
+        if (request.getName() != null) {
+            project.updateName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            project.updateDescription(request.getDescription());
+        }
+        if (request.getEndDate() != null) {
+            project.setEndDate(request.getEndDate());
+        }
+        if (request.getTeamId() != null) {
+            project.setTeamId(request.getTeamId());
+        }
+        return projectUseCase.update(project);
     }
 
     @DELETE

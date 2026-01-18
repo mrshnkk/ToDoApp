@@ -61,6 +61,17 @@ public class Project {
         this.description = newDescription;
     }
 
+    public void updateName(String newName) {
+        if (newName == null) {
+            throw new IllegalArgumentException("Project name is required");
+        }
+        this.name = newName;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
     public List<Task> getTasks() {
         return tasks;
     }

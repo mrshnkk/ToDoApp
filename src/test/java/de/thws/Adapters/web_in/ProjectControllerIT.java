@@ -46,6 +46,15 @@ class ProjectControllerIT {
                 .then()
                 .statusCode(200)
                 .body("projectId", hasItem(projectId));
+
+        given()
+                .contentType("application/json")
+                .body(Map.of("description", "updated"))
+                .when()
+                .put("/projects/" + projectId)
+                .then()
+                .statusCode(200)
+                .body("description", equalTo("updated"));
     }
 
     private static Long createUser(String username, String email) {

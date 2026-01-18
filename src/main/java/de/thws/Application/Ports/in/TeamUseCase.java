@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface TeamUseCase {
     Team create(Team team);
+    Team update(Team team);
     Optional<Team> findById(Long teamId);
     List<Team> findByOwnerId(Long ownerId);
     List<Team> findByUserId(Long userId);

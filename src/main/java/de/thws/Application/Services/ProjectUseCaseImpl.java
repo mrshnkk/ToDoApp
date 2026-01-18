@@ -25,6 +25,12 @@ public class ProjectUseCaseImpl implements ProjectUseCase {
     }
 
     @Override
+    public Project update(Project project) {
+        projectRepository.save(project);
+        return project;
+    }
+
+    @Override
     public Optional<Project> findById(Long projectId) {
         return Optional.ofNullable(projectRepository.findById(projectId));
     }

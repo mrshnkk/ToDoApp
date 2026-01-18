@@ -34,5 +34,15 @@ class UserControllerIT {
                 .then()
                 .statusCode(200)
                 .body("username", equalTo("userit1"));
+
+        given()
+                .contentType("application/json")
+                .body(Map.of(
+                        "email", "userit1-updated@test.com"))
+                .when()
+                .put("/users/" + userId)
+                .then()
+                .statusCode(200)
+                .body("email", equalTo("userit1-updated@test.com"));
     }
 }

@@ -25,6 +25,12 @@ public class TeamUseCaseImpl implements TeamUseCase {
     }
 
     @Override
+    public Team update(Team team) {
+        teamRepository.save(team);
+        return team;
+    }
+
+    @Override
     public Optional<Team> findById(Long teamId) {
         return Optional.ofNullable(teamRepository.findById(teamId));
     }

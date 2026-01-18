@@ -1,6 +1,7 @@
 package de.thws.Adapters.web_in;
 
 import de.thws.Adapters.web_in.dto.TaskCreateRequest;
+import de.thws.Adapters.web_in.dto.TaskUpdateRequest;
 import de.thws.Application.Domain.DomainModels.Project;
 import de.thws.Application.Domain.DomainModels.Task;
 import de.thws.Application.Domain.DomainModels.User;
@@ -13,6 +14,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -83,6 +85,44 @@ public class TaskController {
             }
         }
         return taskUseCase.create(task);
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Task update(@PathParam("id") Long id, TaskUpdateRequest request) {
+        Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
+        if (request.getTitle() != null) {
+            task.renameTask(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            task.changeDescription(request.getDescription());
+        }
+        if (request.getDeadline() != null) {
+            task.setDeadline(request.getDeadline());
+        }
+        if (request.getPriority() != null) {
+            task.changePriority(request.getPriority());
+        }
+        if (request.getStatus() != null) {
+            task.changeStatus(request.getStatus());
+        }
+        if (request.getAssignedUserId() != null) {
+            User user = userUseCase.findById(request.getAssignedUserId())
+                    .orElseThrow(NotFoundException::new);
+            task.assignToUser(user);
+        }
+        if (request.getProjectId() != null) {
+            Project project = projectUseCase.findById(request.getProjectId())
+                    .orElseThrow(NotFoundException::new);
+            task.assignToProject(project);
+        }
+        if (request.getTags() != null) {
+            task.getTags().clear();
+            for (String tag : request.getTags()) {
+                task.addTag(tag);
+            }
+        }
+        return taskUseCase.update(task);
     }
 
     @DELETE

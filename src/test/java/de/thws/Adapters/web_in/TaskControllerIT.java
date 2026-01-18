@@ -67,6 +67,15 @@ class TaskControllerIT {
                 .then()
                 .statusCode(200)
                 .body("taskId", hasItem(taskId));
+
+        given()
+                .contentType("application/json")
+                .body(Map.of("title", "Task IT Updated"))
+                .when()
+                .put("/tasks/" + taskId)
+                .then()
+                .statusCode(200)
+                .body("title", equalTo("Task IT Updated"));
     }
 
     private static Long createUser(String username, String email) {

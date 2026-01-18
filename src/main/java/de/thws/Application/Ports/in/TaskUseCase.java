@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface TaskUseCase {
     Task create(Task task);
+    Task update(Task task);
     Optional<Task> findById(Long taskId);
     List<Task> findByProjectId(Long projectId);
     List<Task> findByAssignedUserId(Long userId);

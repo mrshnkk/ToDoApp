@@ -24,6 +24,12 @@ public class UserUseCaseImpl implements UserUseCase {
     }
 
     @Override
+    public User update(User user) {
+        userRepository.save(user);
+        return user;
+    }
+
+    @Override
     public Optional<User> findById(Long userId) {
         return userRepository.findById(userId);
     }

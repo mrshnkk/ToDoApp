@@ -28,7 +28,7 @@ public class Team {
 
     public void updateTeam(String teamName, String description) {
         this.teamName = teamName;
-
+        this.description = description;
     }
 
     public void addMember(User user, TeamRole teamRole) {

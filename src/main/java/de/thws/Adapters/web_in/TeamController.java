@@ -1,6 +1,7 @@
 package de.thws.Adapters.web_in;
 
 import de.thws.Adapters.web_in.dto.TeamCreateRequest;
+import de.thws.Adapters.web_in.dto.TeamUpdateRequest;
 import de.thws.Application.Domain.DomainModels.Team;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.TeamUseCase;
@@ -11,6 +12,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -55,6 +57,16 @@ public class TeamController {
                 ? new Team(request.getTeamName(), owner)
                 : new Team(request.getTeamName(), request.getDescription(), owner);
         return teamUseCase.create(team);
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Team update(@PathParam("id") Long id, TeamUpdateRequest request) {
+        Team team = teamUseCase.findById(id).orElseThrow(NotFoundException::new);
+        String teamName = request.getTeamName() != null ? request.getTeamName() : team.getTeamName();
+        String description = request.getDescription() != null ? request.getDescription() : team.getDescription();
+        team.updateTeam(teamName, description);
+        return teamUseCase.update(team);
     }
 
     @DELETE

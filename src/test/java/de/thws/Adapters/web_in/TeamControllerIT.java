@@ -45,6 +45,15 @@ class TeamControllerIT {
                 .then()
                 .statusCode(200)
                 .body("teamId", hasItem(teamId));
+
+        given()
+                .contentType("application/json")
+                .body(Map.of("teamName", "Team IT Updated"))
+                .when()
+                .put("/teams/" + teamId)
+                .then()
+                .statusCode(200)
+                .body("teamName", equalTo("Team IT Updated"));
     }
 
     private static Long createUser(String username, String email) {

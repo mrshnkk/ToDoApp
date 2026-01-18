@@ -1,6 +1,7 @@
 package de.thws.Adapters.web_in;
 
 import de.thws.Adapters.web_in.dto.UserCreateRequest;
+import de.thws.Adapters.web_in.dto.UserUpdateRequest;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.UserUseCase;
 import jakarta.inject.Inject;
@@ -9,6 +10,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -44,6 +46,22 @@ public class UserController {
     public User create(UserCreateRequest request) {
         User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
         return userUseCase.create(user);
+    }
+
+    @PUT
+    @Path("/{id}")
+    public User update(@PathParam("id") Long id, UserUpdateRequest request) {
+        User user = userUseCase.findById(id).orElseThrow(NotFoundException::new);
+        if (request.getUsername() != null) {
+            user.changeUsername(request.getUsername());
+        }
+        if (request.getEmail() != null) {
+            user.changeEmail(request.getEmail());
+        }
+        if (request.getPassword() != null) {
+            user.changePassword(request.getPassword());
+        }
+        return userUseCase.update(user);
     }
 
     @DELETE
