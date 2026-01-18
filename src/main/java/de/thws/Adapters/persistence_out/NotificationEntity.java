@@ -18,6 +18,18 @@ public class NotificationEntity {
     @Column(name="status", nullable = false)
     private ReminderStatus status;
 
+    @Column(name="sent_at")
+    private LocalDateTime sentAt;
+
+    @Column(name="retry_count", nullable = false)
+    private int retryCount = 0;
+
+    @Column(name="task_id")
+    private Long taskId;
+
+    @Column(name="user_id")
+    private Long userId;
+
     public NotificationEntity(){}
 
     public NotificationEntity(LocalDateTime reminderTime){
@@ -27,7 +39,7 @@ public class NotificationEntity {
 
         this.reminderTime = reminderTime;
         this.status = ReminderStatus.SCHEDULED; // -> default
-
+        this.retryCount = 0;
     }
 
 
@@ -44,6 +56,46 @@ public class NotificationEntity {
 
     public ReminderStatus getStatus() {
         return status;
+    }
+
+    public LocalDateTime getSentAt() {
+        return sentAt;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setStatus(ReminderStatus status) {
+        this.status = status;
+    }
+
+    public void setSentAt(LocalDateTime sentAt) {
+        this.sentAt = sentAt;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    public void incrementRetryCount() {
+        this.retryCount++;
+    }
+
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }
 

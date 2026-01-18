@@ -3,6 +3,7 @@ package de.thws.Application.Domain.Services;
 import de.thws.Application.Domain.DomainModels.Notification;
 import de.thws.Application.Domain.DomainModels.ReminderStatus;
 import de.thws.Application.Domain.DomainModels.Task;
+import de.thws.Application.Ports.out.NotificationRepository;
 import de.thws.Application.Ports.out.TaskRepository;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ class NotificationServiceTest {
     @Test
     void scheduleReminderSucceeds() {
         InMemoryTaskRepository repo = new InMemoryTaskRepository();
-        NotificationService service = new NotificationService(repo);
+        NotificationService service = new NotificationService(repo, new InMemoryNotificationRepository());
 
         Task task = new Task("Task A");
         repo.addTask(1L, task);
@@ -44,7 +45,7 @@ class NotificationServiceTest {
     @Test
     void scheduleReminderThrowsWhenTaskMissing() {
         InMemoryTaskRepository repo = new InMemoryTaskRepository();
-        NotificationService service = new NotificationService(repo);
+        NotificationService service = new NotificationService(repo, new InMemoryNotificationRepository());
 
         LocalDateTime now = LocalDateTime.of(2024, 6, 10, 10, 0);
 
@@ -55,7 +56,7 @@ class NotificationServiceTest {
     @Test
     void scheduleReminderThrowsWhenTaskIdNull() {
         InMemoryTaskRepository repo = new InMemoryTaskRepository();
-        NotificationService service = new NotificationService(repo);
+        NotificationService service = new NotificationService(repo, new InMemoryNotificationRepository());
 
         LocalDateTime now = LocalDateTime.of(2024, 6, 10, 10, 0);
 
@@ -66,7 +67,7 @@ class NotificationServiceTest {
     @Test
     void scheduleReminderThrowsWhenTimeInPast() {
         InMemoryTaskRepository repo = new InMemoryTaskRepository();
-        NotificationService service = new NotificationService(repo);
+        NotificationService service = new NotificationService(repo, new InMemoryNotificationRepository());
 
         Task task = new Task("Task Past");
         repo.addTask(2L, task);
@@ -122,6 +123,17 @@ class NotificationServiceTest {
         @Override
         public void delete(Long taskId) {
             throw new UnsupportedOperationException("Not needed for these tests");
+        }
+    }
+
+    private static class InMemoryNotificationRepository implements NotificationRepository {
+        @Override
+        public List<de.thws.Adapters.persistence_out.NotificationEntity> findPendingNotifications(LocalDateTime now) {
+            return List.of();
+        }
+
+        @Override
+        public void save(de.thws.Adapters.persistence_out.NotificationEntity notification) {
         }
     }
 }
