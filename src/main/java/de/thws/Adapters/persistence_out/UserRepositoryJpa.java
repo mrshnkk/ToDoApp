@@ -31,7 +31,7 @@ public class UserRepositoryJpa implements UserRepository {
         if (result.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(toDomain(result.get(0)));
+        return Optional.of(toDomain(result.getFirst()));
     }
 
     @Override
@@ -43,7 +43,7 @@ public class UserRepositoryJpa implements UserRepository {
         if (result.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(toDomain(result.get(0)));
+        return Optional.of(toDomain(result.getFirst()));
     }
 
     @Override
