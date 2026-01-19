@@ -8,6 +8,8 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 @QuarkusTest
@@ -54,6 +56,29 @@ class TeamControllerIT {
                 .then()
                 .statusCode(200)
                 .body("teamName", equalTo("Team IT Updated"));
+
+        Long memberId = createUser("teammemberit1", "teammemberit1@test.com");
+
+        given()
+                .when()
+                .post("/teams/" + teamId + "/members/" + memberId)
+                .then()
+                .statusCode(200)
+                .body("userId", hasItems(ownerId.intValue(), memberId.intValue()));
+
+        given()
+                .when()
+                .get("/teams/" + teamId + "/members")
+                .then()
+                .statusCode(200)
+                .body("userId", hasItems(ownerId.intValue(), memberId.intValue()));
+
+        given()
+                .when()
+                .delete("/teams/" + teamId + "/members/" + memberId)
+                .then()
+                .statusCode(200)
+                .body("userId", not(hasItem(memberId.intValue())));
     }
 
     private static Long createUser(String username, String email) {

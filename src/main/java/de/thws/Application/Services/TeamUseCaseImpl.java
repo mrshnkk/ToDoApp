@@ -1,6 +1,7 @@
 package de.thws.Application.Services;
 
 import de.thws.Application.Domain.DomainModels.Team;
+import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.TeamUseCase;
 import de.thws.Application.Ports.out.TeamRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -45,6 +46,22 @@ public class TeamUseCaseImpl implements TeamUseCase {
     public List<Team> findByUserId(Long userId) {
         List<Team> result = teamRepository.findByUserId(userId);
         return result == null ? List.of() : result;
+    }
+
+    @Override
+    public List<User> findMembers(Long teamId) {
+        List<User> result = teamRepository.findMembers(teamId);
+        return result == null ? List.of() : result;
+    }
+
+    @Override
+    public void addMember(Long teamId, Long userId) {
+        teamRepository.addMember(teamId, userId);
+    }
+
+    @Override
+    public void removeMember(Long teamId, Long userId) {
+        teamRepository.removeMember(teamId, userId);
     }
 
     @Override

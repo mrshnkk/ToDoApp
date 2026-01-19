@@ -1,6 +1,7 @@
 package de.thws.Application.Ports.in;
 
 import de.thws.Application.Domain.DomainModels.Team;
+import de.thws.Application.Domain.DomainModels.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,5 +12,8 @@ public interface TeamUseCase {
     Optional<Team> findById(Long teamId);
     List<Team> findByOwnerId(Long ownerId);
     List<Team> findByUserId(Long userId);
+    List<User> findMembers(Long teamId);
+    void addMember(Long teamId, Long userId);
+    void removeMember(Long teamId, Long userId);
     void delete(Long teamId);
 }

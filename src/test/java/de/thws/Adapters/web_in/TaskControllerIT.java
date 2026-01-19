@@ -10,6 +10,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 @QuarkusTest
 class TaskControllerIT {
@@ -87,6 +88,20 @@ class TaskControllerIT {
                 .then()
                 .statusCode(200)
                 .body("title", equalTo("Task IT Updated"));
+
+        given()
+                .when()
+                .delete("/tasks/" + taskId + "/assign")
+                .then()
+                .statusCode(200)
+                .body("assignedUser", nullValue());
+
+        given()
+                .when()
+                .put("/tasks/" + taskId + "/assign/" + assigneeId)
+                .then()
+                .statusCode(200)
+                .body("assignedUser.userId", equalTo(assigneeId.intValue()));
     }
 
     private static Long createUser(String username, String email) {

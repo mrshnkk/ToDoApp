@@ -48,7 +48,8 @@ public class TeamController {
     @CacheResult(cacheName = "teamById")
     public Response getById(@PathParam("id") Long id) {
         Team team = teamUseCase.findById(id).orElseThrow(NotFoundException::new);
-        List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, TEAMS_PATH, team.getTeamId());
+        List<Link> links = new ArrayList<>(LinkHeaderSupport.resourceLinks(uriInfo, TEAMS_PATH, team.getTeamId()));
+        links.addAll(LinkHeaderSupport.teamMemberLinks(uriInfo, team.getTeamId()));
         return Response.ok(team).links(links.toArray(new Link[0])).build();
     }
 
@@ -97,6 +98,32 @@ public class TeamController {
         teamUseCase.delete(id);
     }
 
+    @GET
+    @Path("/{id}/members")
+    public Response getMembers(@PathParam("id") Long id) {
+        teamUseCase.findById(id).orElseThrow(NotFoundException::new);
+        return buildMembersResponse(id, teamUseCase.findMembers(id));
+    }
+
+    @POST
+    @Path("/{id}/members/{userId}")
+    @Consumes(MediaType.WILDCARD)
+    public Response addMember(@PathParam("id") Long id, @PathParam("userId") Long userId) {
+        teamUseCase.findById(id).orElseThrow(NotFoundException::new);
+        userUseCase.findById(userId).orElseThrow(NotFoundException::new);
+        teamUseCase.addMember(id, userId);
+        return buildMembersResponse(id, teamUseCase.findMembers(id));
+    }
+
+    @DELETE
+    @Path("/{id}/members/{userId}")
+    @Consumes(MediaType.WILDCARD)
+    public Response removeMember(@PathParam("id") Long id, @PathParam("userId") Long userId) {
+        teamUseCase.findById(id).orElseThrow(NotFoundException::new);
+        teamUseCase.removeMember(id, userId);
+        return buildMembersResponse(id, teamUseCase.findMembers(id));
+    }
+
     private Response buildCollectionResponse(PageSlice<Team> slice) {
         List<ItemWithSelfLink<Team>> body = wrapWithSelfLinks(slice.getItems());
         List<Link> links = new ArrayList<>();
@@ -127,11 +154,33 @@ public class TeamController {
         if (teams == null || teams.isEmpty()) {
             return List.of();
         }
-        List<Link> links = new ArrayList<>(teams.size() * 2);
+        List<Link> links = new ArrayList<>(teams.size() * 3);
         for (Team team : teams) {
             Long teamId = team.getTeamId();
             if (teamId != null) {
                 links.addAll(LinkHeaderSupport.actionLinks(uriInfo, TEAMS_PATH, teamId));
+                links.addAll(LinkHeaderSupport.teamMemberLinks(uriInfo, teamId));
+            }
+        }
+        return links;
+    }
+
+    private Response buildMembersResponse(Long teamId, List<User> members) {
+        List<Link> links = new ArrayList<>();
+        links.addAll(LinkHeaderSupport.teamMemberLinks(uriInfo, teamId));
+        links.addAll(actionLinksForMembers(teamId, members));
+        return Response.ok(members).links(links.toArray(new Link[0])).build();
+    }
+
+    private List<Link> actionLinksForMembers(Long teamId, List<User> members) {
+        if (members == null || members.isEmpty()) {
+            return List.of();
+        }
+        List<Link> links = new ArrayList<>(members.size());
+        for (User member : members) {
+            Long userId = member.getUserId();
+            if (userId != null) {
+                links.add(LinkHeaderSupport.teamMemberActionLink(uriInfo, teamId, userId, "remove-member"));
             }
         }
         return links;

@@ -58,7 +58,9 @@ public class TaskController {
     @CacheResult(cacheName = "taskById")
     public Response getById(@PathParam("id") Long id) {
         Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
-        List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, TASKS_PATH, task.getTaskId());
+        List<Link> links = new ArrayList<>(LinkHeaderSupport.resourceLinks(uriInfo, TASKS_PATH, task.getTaskId()));
+        Long assignedUserId = task.getAssignedUser() != null ? task.getAssignedUser().getUserId() : null;
+        links.addAll(LinkHeaderSupport.taskAssignmentLinks(uriInfo, task.getTaskId(), assignedUserId));
         return Response.ok(task).links(links.toArray(new Link[0])).build();
     }
 
@@ -184,6 +186,23 @@ public class TaskController {
         return taskUseCase.update(task);
     }
 
+    @PUT
+    @Path("/{id}/assign/{userId}")
+    public Task assign(@PathParam("id") Long id, @PathParam("userId") Long userId) {
+        Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
+        User user = userUseCase.findById(userId).orElseThrow(NotFoundException::new);
+        task.assignToUser(user);
+        return taskUseCase.update(task);
+    }
+
+    @DELETE
+    @Path("/{id}/assign")
+    public Task unassign(@PathParam("id") Long id) {
+        Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
+        task.assignToUser(null);
+        return taskUseCase.update(task);
+    }
+
     @DELETE
     @Path("/{id}")
     public void delete(@PathParam("id") Long id) {
@@ -235,11 +254,13 @@ public class TaskController {
         if (tasks == null || tasks.isEmpty()) {
             return List.of();
         }
-        List<Link> links = new ArrayList<>(tasks.size() * 2);
+        List<Link> links = new ArrayList<>(tasks.size() * 4);
         for (Task task : tasks) {
             Long taskId = task.getTaskId();
             if (taskId != null) {
                 links.addAll(LinkHeaderSupport.actionLinks(uriInfo, TASKS_PATH, taskId));
+                Long assignedUserId = task.getAssignedUser() != null ? task.getAssignedUser().getUserId() : null;
+                links.addAll(LinkHeaderSupport.taskAssignmentLinks(uriInfo, taskId, assignedUserId));
             }
         }
         return links;

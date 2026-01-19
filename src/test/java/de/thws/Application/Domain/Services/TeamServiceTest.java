@@ -132,6 +132,19 @@ class TeamServiceTest {
         }
 
         @Override
+        public List<User> findMembers(Long teamId) {
+            return List.of();
+        }
+
+        @Override
+        public void addMember(Long teamId, Long userId) {
+        }
+
+        @Override
+        public void removeMember(Long teamId, Long userId) {
+        }
+
+        @Override
         public void save(Team team) {
             if (team.getTeamId() == null) {
                 setTeamId(team, nextId++);

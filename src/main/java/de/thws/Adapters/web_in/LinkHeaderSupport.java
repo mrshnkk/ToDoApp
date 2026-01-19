@@ -47,6 +47,52 @@ public final class LinkHeaderSupport {
         return links;
     }
 
+    public static List<Link> teamMemberLinks(UriInfo uriInfo, Long teamId) {
+        URI membersUri = uriInfo.getBaseUriBuilder()
+                .path("teams")
+                .path(String.valueOf(teamId))
+                .path("members")
+                .build();
+        List<Link> links = new ArrayList<>(2);
+        links.add(buildLink(membersUri, "members"));
+        links.add(buildLink(membersUri, "add-member"));
+        return links;
+    }
+
+    public static Link teamMemberActionLink(UriInfo uriInfo, Long teamId, Long userId, String rel) {
+        URI memberUri = uriInfo.getBaseUriBuilder()
+                .path("teams")
+                .path(String.valueOf(teamId))
+                .path("members")
+                .path(String.valueOf(userId))
+                .build();
+        return buildLink(memberUri, rel);
+    }
+
+    public static List<Link> taskAssignmentLinks(UriInfo uriInfo, Long taskId, Long assignedUserId) {
+        List<Link> links = new ArrayList<>(3);
+        URI assignUri = uriInfo.getBaseUriBuilder()
+                .path("tasks")
+                .path(String.valueOf(taskId))
+                .path("assign")
+                .build();
+        links.add(buildLink(assignUri, "assign"));
+        URI unassignUri = uriInfo.getBaseUriBuilder()
+                .path("tasks")
+                .path(String.valueOf(taskId))
+                .path("assign")
+                .build();
+        links.add(buildLink(unassignUri, "unassign"));
+        if (assignedUserId != null) {
+            URI assigneeUri = uriInfo.getBaseUriBuilder()
+                    .path("users")
+                    .path(String.valueOf(assignedUserId))
+                    .build();
+            links.add(buildLink(assigneeUri, "assignee"));
+        }
+        return links;
+    }
+
     public static String resourceHref(UriInfo uriInfo, String resourcePath, Long id) {
         return resourceUri(uriInfo, resourcePath, id).toString();
     }
