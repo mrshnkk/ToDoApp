@@ -2,10 +2,12 @@ package de.thws.Adapters.web_in;
 
 import de.thws.Adapters.web_in.dto.TeamCreateRequest;
 import de.thws.Adapters.web_in.dto.TeamUpdateRequest;
+import de.thws.Adapters.web_in.dto.ItemWithSelfLink;
 import de.thws.Application.Domain.DomainModels.Team;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.TeamUseCase;
 import de.thws.Application.Ports.in.UserUseCase;
+import io.quarkus.cache.CacheResult;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -17,14 +19,20 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Link;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Path("/teams")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class TeamController {
+    private static final String TEAMS_PATH = "teams";
 
     @Inject
     TeamUseCase teamUseCase;
@@ -32,39 +40,35 @@ public class TeamController {
     @Inject
     UserUseCase userUseCase;
 
+    @Context
+    UriInfo uriInfo;
+
     @GET
     @Path("/{id}")
-    public Team getById(@PathParam("id") Long id) {
-        return teamUseCase.findById(id).orElseThrow(NotFoundException::new);
+    @CacheResult(cacheName = "teamById")
+    public Response getById(@PathParam("id") Long id) {
+        Team team = teamUseCase.findById(id).orElseThrow(NotFoundException::new);
+        List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, TEAMS_PATH, team.getTeamId());
+        return Response.ok(team).links(links.toArray(new Link[0])).build();
     }
 
     @GET
-    public List<Team> getByQuery(
+    @CacheResult(cacheName = "teamQuery")
+    public Response getByQuery(
             @QueryParam("ownerId") Long ownerId,
             @QueryParam("userId") Long userId,
             @QueryParam("page") Integer page,
             @QueryParam("size") Integer size) {
+        List<Team> result;
         if (ownerId != null) {
-            return paginate(teamUseCase.findByOwnerId(ownerId), page, size);
+            result = teamUseCase.findByOwnerId(ownerId);
+        } else if (userId != null) {
+            result = teamUseCase.findByUserId(userId);
+        } else {
+            result = List.of();
         }
-        if (userId != null) {
-            return paginate(teamUseCase.findByUserId(userId), page, size);
-        }
-        return List.of();
-    }
-
-    private static <T> List<T> paginate(List<T> items, Integer page, Integer size) {
-        if (items == null || items.isEmpty()) {
-            return List.of();
-        }
-        int safePage = page == null ? 0 : Math.max(0, page);
-        int safeSize = size == null ? 20 : Math.max(1, size);
-        int fromIndex = safePage * safeSize;
-        if (fromIndex >= items.size()) {
-            return List.of();
-        }
-        int toIndex = Math.min(items.size(), fromIndex + safeSize);
-        return items.subList(fromIndex, toIndex);
+        PageSlice<Team> slice = PageSlice.from(result, page, size);
+        return buildCollectionResponse(slice);
     }
 
     @POST
@@ -91,5 +95,45 @@ public class TeamController {
     @Path("/{id}")
     public void delete(@PathParam("id") Long id) {
         teamUseCase.delete(id);
+    }
+
+    private Response buildCollectionResponse(PageSlice<Team> slice) {
+        List<ItemWithSelfLink<Team>> body = wrapWithSelfLinks(slice.getItems());
+        List<Link> links = new ArrayList<>();
+        links.addAll(LinkHeaderSupport.collectionLinks(
+                uriInfo,
+                slice.getPage(),
+                slice.getSize(),
+                slice.hasNext(),
+                slice.hasPrev()));
+        links.addAll(actionLinksForTeams(slice.getItems()));
+        return Response.ok(body).links(links.toArray(new Link[0])).build();
+    }
+
+    private List<ItemWithSelfLink<Team>> wrapWithSelfLinks(List<Team> teams) {
+        if (teams == null || teams.isEmpty()) {
+            return List.of();
+        }
+        List<ItemWithSelfLink<Team>> result = new ArrayList<>(teams.size());
+        for (Team team : teams) {
+            Long teamId = team.getTeamId();
+            String self = teamId == null ? null : LinkHeaderSupport.resourceHref(uriInfo, TEAMS_PATH, teamId);
+            result.add(new ItemWithSelfLink<>(team, self));
+        }
+        return result;
+    }
+
+    private List<Link> actionLinksForTeams(List<Team> teams) {
+        if (teams == null || teams.isEmpty()) {
+            return List.of();
+        }
+        List<Link> links = new ArrayList<>(teams.size() * 2);
+        for (Team team : teams) {
+            Long teamId = team.getTeamId();
+            if (teamId != null) {
+                links.addAll(LinkHeaderSupport.actionLinks(uriInfo, TEAMS_PATH, teamId));
+            }
+        }
+        return links;
     }
 }

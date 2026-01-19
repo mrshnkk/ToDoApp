@@ -2,6 +2,7 @@ package de.thws.Adapters.web_in;
 
 import de.thws.Adapters.web_in.dto.TaskCreateRequest;
 import de.thws.Adapters.web_in.dto.TaskUpdateRequest;
+import de.thws.Adapters.web_in.dto.ItemWithSelfLink;
 import de.thws.Application.Domain.DomainModels.Project;
 import de.thws.Application.Domain.DomainModels.Task;
 import de.thws.Application.Domain.DomainModels.User;
@@ -9,6 +10,7 @@ import de.thws.Application.Domain.Services.TaskFilter;
 import de.thws.Application.Ports.in.ProjectUseCase;
 import de.thws.Application.Ports.in.TaskUseCase;
 import de.thws.Application.Ports.in.UserUseCase;
+import io.quarkus.cache.CacheResult;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
@@ -21,9 +23,14 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Link;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +39,7 @@ import java.util.Set;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class TaskController {
+    private static final String TASKS_PATH = "tasks";
 
     @Inject
     TaskUseCase taskUseCase;
@@ -42,32 +50,43 @@ public class TaskController {
     @Inject
     ProjectUseCase projectUseCase;
 
+    @Context
+    UriInfo uriInfo;
+
     @GET
     @Path("/{id}")
-    public Task getById(@PathParam("id") Long id) {
-        return taskUseCase.findById(id).orElseThrow(NotFoundException::new);
+    @CacheResult(cacheName = "taskById")
+    public Response getById(@PathParam("id") Long id) {
+        Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
+        List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, TASKS_PATH, task.getTaskId());
+        return Response.ok(task).links(links.toArray(new Link[0])).build();
     }
 
     @GET
     @Path("/project/{projectId}")
-    public List<Task> getByProject(
+    @CacheResult(cacheName = "tasksByProject")
+    public Response getByProject(
             @PathParam("projectId") Long projectId,
             @QueryParam("page") Integer page,
             @QueryParam("size") Integer size) {
-        return paginate(taskUseCase.findByProjectId(projectId), page, size);
+        PageSlice<Task> slice = PageSlice.from(taskUseCase.findByProjectId(projectId), page, size);
+        return buildCollectionResponse(slice);
     }
 
     @GET
     @Path("/assigned/{userId}")
-    public List<Task> getByAssignedUser(
+    @CacheResult(cacheName = "tasksByAssignedUser")
+    public Response getByAssignedUser(
             @PathParam("userId") Long userId,
             @QueryParam("page") Integer page,
             @QueryParam("size") Integer size) {
-        return paginate(taskUseCase.findByAssignedUserId(userId), page, size);
+        PageSlice<Task> slice = PageSlice.from(taskUseCase.findByAssignedUserId(userId), page, size);
+        return buildCollectionResponse(slice);
     }
 
     @GET
-    public List<Task> queryTasks(
+    @CacheResult(cacheName = "taskQuery")
+    public Response queryTasks(
             @QueryParam("assignedUserId") Long assignedUserId,
             @QueryParam("status") String status,
             @QueryParam("priority") String priority,
@@ -90,7 +109,8 @@ public class TaskController {
         }
         Set<String> tagSet = parseTags(tags);
         TaskFilter filter = new TaskFilter(status, priority, project, tagSet, dueDateValue, teamId);
-        return paginate(taskUseCase.queryForUser(assignedUserId, filter), page, size);
+        PageSlice<Task> slice = PageSlice.from(taskUseCase.queryForUser(assignedUserId, filter), page, size);
+        return buildCollectionResponse(slice);
     }
 
     @POST
@@ -185,17 +205,43 @@ public class TaskController {
         return result;
     }
 
-    private static <T> List<T> paginate(List<T> items, Integer page, Integer size) {
-        if (items == null || items.isEmpty()) {
+    private Response buildCollectionResponse(PageSlice<Task> slice) {
+        List<ItemWithSelfLink<Task>> body = wrapWithSelfLinks(slice.getItems());
+        List<Link> links = new ArrayList<>();
+        links.addAll(LinkHeaderSupport.collectionLinks(
+                uriInfo,
+                slice.getPage(),
+                slice.getSize(),
+                slice.hasNext(),
+                slice.hasPrev()));
+        links.addAll(actionLinksForTasks(slice.getItems()));
+        return Response.ok(body).links(links.toArray(new Link[0])).build();
+    }
+
+    private List<ItemWithSelfLink<Task>> wrapWithSelfLinks(List<Task> tasks) {
+        if (tasks == null || tasks.isEmpty()) {
             return List.of();
         }
-        int safePage = page == null ? 0 : Math.max(0, page);
-        int safeSize = size == null ? 20 : Math.max(1, size);
-        int fromIndex = safePage * safeSize;
-        if (fromIndex >= items.size()) {
+        List<ItemWithSelfLink<Task>> result = new ArrayList<>(tasks.size());
+        for (Task task : tasks) {
+            Long taskId = task.getTaskId();
+            String self = taskId == null ? null : LinkHeaderSupport.resourceHref(uriInfo, TASKS_PATH, taskId);
+            result.add(new ItemWithSelfLink<>(task, self));
+        }
+        return result;
+    }
+
+    private List<Link> actionLinksForTasks(List<Task> tasks) {
+        if (tasks == null || tasks.isEmpty()) {
             return List.of();
         }
-        int toIndex = Math.min(items.size(), fromIndex + safeSize);
-        return items.subList(fromIndex, toIndex);
+        List<Link> links = new ArrayList<>(tasks.size() * 2);
+        for (Task task : tasks) {
+            Long taskId = task.getTaskId();
+            if (taskId != null) {
+                links.addAll(LinkHeaderSupport.actionLinks(uriInfo, TASKS_PATH, taskId));
+            }
+        }
+        return links;
     }
 }
