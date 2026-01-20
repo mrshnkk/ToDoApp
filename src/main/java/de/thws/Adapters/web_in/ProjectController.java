@@ -1,8 +1,9 @@
 package de.thws.Adapters.web_in;
 
-import de.thws.Adapters.web_in.dto.ProjectCreateRequest;
-import de.thws.Adapters.web_in.dto.ProjectUpdateRequest;
 import de.thws.Adapters.web_in.dto.ItemWithSelfLink;
+import de.thws.Adapters.web_in.dto.ProjectCreateRequest;
+import de.thws.Adapters.web_in.dto.ProjectResponse;
+import de.thws.Adapters.web_in.dto.ProjectUpdateRequest;
 import de.thws.Application.Domain.DomainModels.Project;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.ProjectUseCase;
@@ -48,8 +49,9 @@ public class ProjectController {
     @CacheResult(cacheName = "projectById")
     public Response getById(@PathParam("id") Long id) {
         Project project = projectUseCase.findById(id).orElseThrow(NotFoundException::new);
+        ProjectResponse response = ResponseMapper.toProjectResponse(project);
         List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, PROJECTS_PATH, project.getProjectId());
-        return Response.ok(project).links(links.toArray(new Link[0])).build();
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @GET
@@ -72,7 +74,7 @@ public class ProjectController {
     }
 
     @POST
-    public Project create(ProjectCreateRequest request) {
+    public ProjectResponse create(ProjectCreateRequest request) {
         User owner = userUseCase.findById(request.getOwnerId())
                 .orElseThrow(NotFoundException::new);
         Project project = new Project(request.getName(), owner);
@@ -82,12 +84,12 @@ public class ProjectController {
         if (request.getTeamId() != null) {
             project.setTeamId(request.getTeamId());
         }
-        return projectUseCase.create(project);
+        return ResponseMapper.toProjectResponse(projectUseCase.create(project));
     }
 
     @PUT
     @Path("/{id}")
-    public Project update(@PathParam("id") Long id, ProjectUpdateRequest request) {
+    public ProjectResponse update(@PathParam("id") Long id, ProjectUpdateRequest request) {
         Project project = projectUseCase.findById(id).orElseThrow(NotFoundException::new);
         if (request.getName() != null) {
             project.updateName(request.getName());
@@ -101,7 +103,7 @@ public class ProjectController {
         if (request.getTeamId() != null) {
             project.setTeamId(request.getTeamId());
         }
-        return projectUseCase.update(project);
+        return ResponseMapper.toProjectResponse(projectUseCase.update(project));
     }
 
     @DELETE
@@ -111,7 +113,7 @@ public class ProjectController {
     }
 
     private Response buildCollectionResponse(PageSlice<Project> slice) {
-        List<ItemWithSelfLink<Project>> body = wrapWithSelfLinks(slice.getItems());
+        List<ItemWithSelfLink<ProjectResponse>> body = wrapWithSelfLinks(slice.getItems());
         List<Link> links = new ArrayList<>();
         links.addAll(LinkHeaderSupport.collectionLinks(
                 uriInfo,
@@ -123,15 +125,15 @@ public class ProjectController {
         return Response.ok(body).links(links.toArray(new Link[0])).build();
     }
 
-    private List<ItemWithSelfLink<Project>> wrapWithSelfLinks(List<Project> projects) {
+    private List<ItemWithSelfLink<ProjectResponse>> wrapWithSelfLinks(List<Project> projects) {
         if (projects == null || projects.isEmpty()) {
             return List.of();
         }
-        List<ItemWithSelfLink<Project>> result = new ArrayList<>(projects.size());
+        List<ItemWithSelfLink<ProjectResponse>> result = new ArrayList<>(projects.size());
         for (Project project : projects) {
             Long projectId = project.getProjectId();
             String self = projectId == null ? null : LinkHeaderSupport.resourceHref(uriInfo, PROJECTS_PATH, projectId);
-            result.add(new ItemWithSelfLink<>(project, self));
+            result.add(new ItemWithSelfLink<>(ResponseMapper.toProjectResponse(project), self));
         }
         return result;
     }

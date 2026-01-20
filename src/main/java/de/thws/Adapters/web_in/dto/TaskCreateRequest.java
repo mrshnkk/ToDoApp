@@ -1,8 +1,5 @@
 package de.thws.Adapters.web_in.dto;
 
-import de.thws.Application.Domain.DomainModels.TaskPriority;
-import de.thws.Application.Domain.DomainModels.TaskStatus;
-
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -10,8 +7,8 @@ public class TaskCreateRequest {
     private String title;
     private String description;
     private LocalDate deadline;
-    private TaskPriority priority;
-    private TaskStatus status;
+    private String priority;
+    private String status;
     private Long projectId;
     private Long assignedUserId;
     private Set<String> tags;
@@ -43,19 +40,19 @@ public class TaskCreateRequest {
         this.deadline = deadline;
     }
 
-    public TaskPriority getPriority() {
+    public String getPriority() {
         return priority;
     }
 
-    public void setPriority(TaskPriority priority) {
+    public void setPriority(String priority) {
         this.priority = priority;
     }
 
-    public TaskStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(TaskStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

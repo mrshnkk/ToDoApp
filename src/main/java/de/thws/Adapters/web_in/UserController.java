@@ -1,6 +1,7 @@
 package de.thws.Adapters.web_in;
 
 import de.thws.Adapters.web_in.dto.UserCreateRequest;
+import de.thws.Adapters.web_in.dto.UserResponse;
 import de.thws.Adapters.web_in.dto.UserUpdateRequest;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.UserUseCase;
@@ -41,8 +42,9 @@ public class UserController {
     @CacheResult(cacheName = "userById")
     public Response getById(@PathParam("id") Long id) {
         User user = userUseCase.findById(id).orElseThrow(NotFoundException::new);
+        UserResponse response = ResponseMapper.toUserResponse(user);
         List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, USERS_PATH, user.getUserId());
-        return Response.ok(user).links(links.toArray(new Link[0])).build();
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @GET
@@ -56,19 +58,20 @@ public class UserController {
         } else {
             throw new NotFoundException();
         }
+        UserResponse response = ResponseMapper.toUserResponse(user);
         List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, USERS_PATH, user.getUserId());
-        return Response.ok(user).links(links.toArray(new Link[0])).build();
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @POST
-    public User create(UserCreateRequest request) {
+    public UserResponse create(UserCreateRequest request) {
         User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
-        return userUseCase.create(user);
+        return ResponseMapper.toUserResponse(userUseCase.create(user));
     }
 
     @PUT
     @Path("/{id}")
-    public User update(@PathParam("id") Long id, UserUpdateRequest request) {
+    public UserResponse update(@PathParam("id") Long id, UserUpdateRequest request) {
         User user = userUseCase.findById(id).orElseThrow(NotFoundException::new);
         if (request.getUsername() != null) {
             user.changeUsername(request.getUsername());
@@ -79,7 +82,7 @@ public class UserController {
         if (request.getPassword() != null) {
             user.changePassword(request.getPassword());
         }
-        return userUseCase.update(user);
+        return ResponseMapper.toUserResponse(userUseCase.update(user));
     }
 
     @DELETE

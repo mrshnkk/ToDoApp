@@ -1,10 +1,13 @@
 package de.thws.Adapters.web_in;
 
-import de.thws.Adapters.web_in.dto.TaskCreateRequest;
-import de.thws.Adapters.web_in.dto.TaskUpdateRequest;
 import de.thws.Adapters.web_in.dto.ItemWithSelfLink;
+import de.thws.Adapters.web_in.dto.TaskCreateRequest;
+import de.thws.Adapters.web_in.dto.TaskResponse;
+import de.thws.Adapters.web_in.dto.TaskUpdateRequest;
 import de.thws.Application.Domain.DomainModels.Project;
 import de.thws.Application.Domain.DomainModels.Task;
+import de.thws.Application.Domain.DomainModels.TaskPriority;
+import de.thws.Application.Domain.DomainModels.TaskStatus;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Domain.Services.TaskFilter;
 import de.thws.Application.Ports.in.ProjectUseCase;
@@ -58,10 +61,11 @@ public class TaskController {
     @CacheResult(cacheName = "taskById")
     public Response getById(@PathParam("id") Long id) {
         Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
+        TaskResponse response = ResponseMapper.toTaskResponse(task);
         List<Link> links = new ArrayList<>(LinkHeaderSupport.resourceLinks(uriInfo, TASKS_PATH, task.getTaskId()));
         Long assignedUserId = task.getAssignedUser() != null ? task.getAssignedUser().getUserId() : null;
         links.addAll(LinkHeaderSupport.taskAssignmentLinks(uriInfo, task.getTaskId(), assignedUserId));
-        return Response.ok(task).links(links.toArray(new Link[0])).build();
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @GET
@@ -116,7 +120,7 @@ public class TaskController {
     }
 
     @POST
-    public Task create(TaskCreateRequest request) {
+    public TaskResponse create(TaskCreateRequest request) {
         Task task = new Task(request.getTitle());
         if (request.getDescription() != null) {
             task.changeDescription(request.getDescription());
@@ -125,10 +129,10 @@ public class TaskController {
             task.setDeadline(request.getDeadline());
         }
         if (request.getPriority() != null) {
-            task.changePriority(request.getPriority());
+            task.changePriority(parsePriority(request.getPriority()));
         }
         if (request.getStatus() != null) {
-            task.changeStatus(request.getStatus());
+            task.changeStatus(parseStatus(request.getStatus()));
         }
         if (request.getAssignedUserId() != null) {
             User user = userUseCase.findById(request.getAssignedUserId())
@@ -145,12 +149,12 @@ public class TaskController {
                 task.addTag(tag);
             }
         }
-        return taskUseCase.create(task);
+        return ResponseMapper.toTaskResponse(taskUseCase.create(task));
     }
 
     @PUT
     @Path("/{id}")
-    public Task update(@PathParam("id") Long id, TaskUpdateRequest request) {
+    public TaskResponse update(@PathParam("id") Long id, TaskUpdateRequest request) {
         Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
         if (request.getTitle() != null) {
             task.renameTask(request.getTitle());
@@ -162,10 +166,10 @@ public class TaskController {
             task.setDeadline(request.getDeadline());
         }
         if (request.getPriority() != null) {
-            task.changePriority(request.getPriority());
+            task.changePriority(parsePriority(request.getPriority()));
         }
         if (request.getStatus() != null) {
-            task.changeStatus(request.getStatus());
+            task.changeStatus(parseStatus(request.getStatus()));
         }
         if (request.getAssignedUserId() != null) {
             User user = userUseCase.findById(request.getAssignedUserId())
@@ -183,24 +187,24 @@ public class TaskController {
                 task.addTag(tag);
             }
         }
-        return taskUseCase.update(task);
+        return ResponseMapper.toTaskResponse(taskUseCase.update(task));
     }
 
     @PUT
     @Path("/{id}/assign/{userId}")
-    public Task assign(@PathParam("id") Long id, @PathParam("userId") Long userId) {
+    public TaskResponse assign(@PathParam("id") Long id, @PathParam("userId") Long userId) {
         Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
         User user = userUseCase.findById(userId).orElseThrow(NotFoundException::new);
         task.assignToUser(user);
-        return taskUseCase.update(task);
+        return ResponseMapper.toTaskResponse(taskUseCase.update(task));
     }
 
     @DELETE
     @Path("/{id}/assign")
-    public Task unassign(@PathParam("id") Long id) {
+    public TaskResponse unassign(@PathParam("id") Long id) {
         Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
         task.assignToUser(null);
-        return taskUseCase.update(task);
+        return ResponseMapper.toTaskResponse(taskUseCase.update(task));
     }
 
     @DELETE
@@ -225,7 +229,7 @@ public class TaskController {
     }
 
     private Response buildCollectionResponse(PageSlice<Task> slice) {
-        List<ItemWithSelfLink<Task>> body = wrapWithSelfLinks(slice.getItems());
+        List<ItemWithSelfLink<TaskResponse>> body = wrapWithSelfLinks(slice.getItems());
         List<Link> links = new ArrayList<>();
         links.addAll(LinkHeaderSupport.collectionLinks(
                 uriInfo,
@@ -237,15 +241,15 @@ public class TaskController {
         return Response.ok(body).links(links.toArray(new Link[0])).build();
     }
 
-    private List<ItemWithSelfLink<Task>> wrapWithSelfLinks(List<Task> tasks) {
+    private List<ItemWithSelfLink<TaskResponse>> wrapWithSelfLinks(List<Task> tasks) {
         if (tasks == null || tasks.isEmpty()) {
             return List.of();
         }
-        List<ItemWithSelfLink<Task>> result = new ArrayList<>(tasks.size());
+        List<ItemWithSelfLink<TaskResponse>> result = new ArrayList<>(tasks.size());
         for (Task task : tasks) {
             Long taskId = task.getTaskId();
             String self = taskId == null ? null : LinkHeaderSupport.resourceHref(uriInfo, TASKS_PATH, taskId);
-            result.add(new ItemWithSelfLink<>(task, self));
+            result.add(new ItemWithSelfLink<>(ResponseMapper.toTaskResponse(task), self));
         }
         return result;
     }
@@ -264,5 +268,29 @@ public class TaskController {
             }
         }
         return links;
+    }
+
+    private TaskPriority parsePriority(String priority) {
+        String normalized = priority.trim();
+        if (normalized.isEmpty()) {
+            throw new BadRequestException("Priority is empty");
+        }
+        try {
+            return TaskPriority.valueOf(normalized.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Invalid priority: " + priority);
+        }
+    }
+
+    private TaskStatus parseStatus(String status) {
+        String normalized = status.trim();
+        if (normalized.isEmpty()) {
+            throw new BadRequestException("Status is empty");
+        }
+        try {
+            return TaskStatus.valueOf(normalized.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Invalid status: " + status);
+        }
     }
 }

@@ -1,8 +1,10 @@
 package de.thws.Adapters.web_in;
 
-import de.thws.Adapters.web_in.dto.TeamCreateRequest;
-import de.thws.Adapters.web_in.dto.TeamUpdateRequest;
 import de.thws.Adapters.web_in.dto.ItemWithSelfLink;
+import de.thws.Adapters.web_in.dto.TeamCreateRequest;
+import de.thws.Adapters.web_in.dto.TeamResponse;
+import de.thws.Adapters.web_in.dto.TeamUpdateRequest;
+import de.thws.Adapters.web_in.dto.UserResponse;
 import de.thws.Application.Domain.DomainModels.Team;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.in.TeamUseCase;
@@ -48,9 +50,10 @@ public class TeamController {
     @CacheResult(cacheName = "teamById")
     public Response getById(@PathParam("id") Long id) {
         Team team = teamUseCase.findById(id).orElseThrow(NotFoundException::new);
+        TeamResponse response = ResponseMapper.toTeamResponse(team);
         List<Link> links = new ArrayList<>(LinkHeaderSupport.resourceLinks(uriInfo, TEAMS_PATH, team.getTeamId()));
         links.addAll(LinkHeaderSupport.teamMemberLinks(uriInfo, team.getTeamId()));
-        return Response.ok(team).links(links.toArray(new Link[0])).build();
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @GET
@@ -73,23 +76,23 @@ public class TeamController {
     }
 
     @POST
-    public Team create(TeamCreateRequest request) {
+    public TeamResponse create(TeamCreateRequest request) {
         User owner = userUseCase.findById(request.getOwnerId())
                 .orElseThrow(NotFoundException::new);
         Team team = request.getDescription() == null
                 ? new Team(request.getTeamName(), owner)
                 : new Team(request.getTeamName(), request.getDescription(), owner);
-        return teamUseCase.create(team);
+        return ResponseMapper.toTeamResponse(teamUseCase.create(team));
     }
 
     @PUT
     @Path("/{id}")
-    public Team update(@PathParam("id") Long id, TeamUpdateRequest request) {
+    public TeamResponse update(@PathParam("id") Long id, TeamUpdateRequest request) {
         Team team = teamUseCase.findById(id).orElseThrow(NotFoundException::new);
         String teamName = request.getTeamName() != null ? request.getTeamName() : team.getTeamName();
         String description = request.getDescription() != null ? request.getDescription() : team.getDescription();
         team.updateTeam(teamName, description);
-        return teamUseCase.update(team);
+        return ResponseMapper.toTeamResponse(teamUseCase.update(team));
     }
 
     @DELETE
@@ -125,7 +128,7 @@ public class TeamController {
     }
 
     private Response buildCollectionResponse(PageSlice<Team> slice) {
-        List<ItemWithSelfLink<Team>> body = wrapWithSelfLinks(slice.getItems());
+        List<ItemWithSelfLink<TeamResponse>> body = wrapWithSelfLinks(slice.getItems());
         List<Link> links = new ArrayList<>();
         links.addAll(LinkHeaderSupport.collectionLinks(
                 uriInfo,
@@ -137,15 +140,15 @@ public class TeamController {
         return Response.ok(body).links(links.toArray(new Link[0])).build();
     }
 
-    private List<ItemWithSelfLink<Team>> wrapWithSelfLinks(List<Team> teams) {
+    private List<ItemWithSelfLink<TeamResponse>> wrapWithSelfLinks(List<Team> teams) {
         if (teams == null || teams.isEmpty()) {
             return List.of();
         }
-        List<ItemWithSelfLink<Team>> result = new ArrayList<>(teams.size());
+        List<ItemWithSelfLink<TeamResponse>> result = new ArrayList<>(teams.size());
         for (Team team : teams) {
             Long teamId = team.getTeamId();
             String self = teamId == null ? null : LinkHeaderSupport.resourceHref(uriInfo, TEAMS_PATH, teamId);
-            result.add(new ItemWithSelfLink<>(team, self));
+            result.add(new ItemWithSelfLink<>(ResponseMapper.toTeamResponse(team), self));
         }
         return result;
     }
@@ -166,10 +169,11 @@ public class TeamController {
     }
 
     private Response buildMembersResponse(Long teamId, List<User> members) {
+        List<UserResponse> body = ResponseMapper.toUserResponses(members);
         List<Link> links = new ArrayList<>();
         links.addAll(LinkHeaderSupport.teamMemberLinks(uriInfo, teamId));
         links.addAll(actionLinksForMembers(teamId, members));
-        return Response.ok(members).links(links.toArray(new Link[0])).build();
+        return Response.ok(body).links(links.toArray(new Link[0])).build();
     }
 
     private List<Link> actionLinksForMembers(Long teamId, List<User> members) {
