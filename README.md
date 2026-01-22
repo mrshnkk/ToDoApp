@@ -4,7 +4,7 @@
 
 Kurzbeschreibung: Task Management System (To-Do App) als REST-API.
 
-## Technologien
+## Software
 
 - Java 17+
 - Quarkus 3.12.3
