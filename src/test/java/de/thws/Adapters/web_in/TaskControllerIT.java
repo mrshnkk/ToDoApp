@@ -94,14 +94,14 @@ class TaskControllerIT {
                 .delete("/tasks/" + taskId + "/assign")
                 .then()
                 .statusCode(200)
-                .body("assignedUser", nullValue());
+                .body("assignedUserId", nullValue());
 
         given()
                 .when()
                 .put("/tasks/" + taskId + "/assign/" + assigneeId)
                 .then()
                 .statusCode(200)
-                .body("assignedUser.userId", equalTo(assigneeId.intValue()));
+                .body("assignedUserId", equalTo(assigneeId.intValue()));
     }
 
     private static Long createUser(String username, String email) {
