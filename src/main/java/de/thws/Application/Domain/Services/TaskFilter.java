@@ -14,18 +14,6 @@ public class TaskFilter {
     private final LocalDate dueDate;
     private final Long teamId;
 
-    public TaskFilter(String status, String priority, Project project, Set<String> tags) {
-        this.status = status;
-        this.priority = priority;
-        this.project = project;
-        if (tags == null) {
-            this.tags = Collections.emptySet();
-        } else {
-            this.tags = new HashSet<>(tags);
-        }
-        this.dueDate = null;
-        this.teamId = null;
-    }
 
     public TaskFilter(
             String status,
