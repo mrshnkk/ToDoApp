@@ -78,6 +78,13 @@ public class NotificationEntity {
         this.status = status;
     }
 
+    public void setReminderTime(LocalDateTime reminderTime) {
+        if (reminderTime == null) {
+            throw new IllegalArgumentException("Reminder time cannot be null");
+        }
+        this.reminderTime = reminderTime;
+    }
+
     public void setSentAt(LocalDateTime sentAt) {
         this.sentAt = sentAt;
     }
@@ -98,4 +105,3 @@ public class NotificationEntity {
         this.userId = userId;
     }
 }
-

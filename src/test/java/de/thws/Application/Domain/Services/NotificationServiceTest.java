@@ -1,6 +1,7 @@
 package de.thws.Application.Domain.Services;
 
 import de.thws.Application.Domain.DomainModels.Notification;
+import de.thws.Application.Domain.DomainModels.NotificationRecord;
 import de.thws.Application.Domain.DomainModels.ReminderStatus;
 import de.thws.Application.Domain.DomainModels.Task;
 import de.thws.Application.Ports.out.NotificationRepository;
@@ -128,12 +129,12 @@ class NotificationServiceTest {
 
     private static class InMemoryNotificationRepository implements NotificationRepository {
         @Override
-        public List<de.thws.Adapters.persistence_out.NotificationEntity> findPendingNotifications(LocalDateTime now) {
+        public List<NotificationRecord> findPendingNotifications(LocalDateTime now) {
             return List.of();
         }
 
         @Override
-        public void save(de.thws.Adapters.persistence_out.NotificationEntity notification) {
+        public void save(NotificationRecord notification) {
         }
     }
 }

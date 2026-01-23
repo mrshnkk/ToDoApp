@@ -1,6 +1,6 @@
 package de.thws.Application.Domain.Services;
 
-import de.thws.Adapters.persistence_out.NotificationEntity;
+import de.thws.Application.Domain.DomainModels.NotificationRecord;
 import de.thws.Application.Domain.DomainModels.ReminderStatus;
 import de.thws.Application.Domain.DomainModels.Task;
 import de.thws.Application.Domain.DomainModels.TaskStatus;
@@ -48,12 +48,12 @@ public class NotificationService {
         if (now == null) {
             throw new IllegalArgumentException("Current time is required");
         }
-        List<NotificationEntity> pending = notificationRepository.findPendingNotifications(now);
+        List<NotificationRecord> pending = notificationRepository.findPendingNotifications(now);
         if (pending.isEmpty()) {
             return;
         }
 
-        for (NotificationEntity notification : pending) {
+        for (NotificationRecord notification : pending) {
             Long taskId = notification.getTaskId();
             if (taskId == null) {
                 notification.setStatus(ReminderStatus.FAILED);
@@ -100,7 +100,7 @@ public class NotificationService {
         }
     }
 
-    public boolean sendNotification(NotificationEntity notification) {
+    public boolean sendNotification(NotificationRecord notification) {
         try {
             ZoneId userZone = ZoneOffset.UTC;
             LocalDateTime reminderTime = notification.getReminderTime();
