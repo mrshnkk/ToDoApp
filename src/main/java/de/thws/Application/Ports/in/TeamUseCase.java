@@ -15,5 +15,7 @@ public interface TeamUseCase {
     List<User> findMembers(Long teamId);
     void addMember(Long teamId, Long userId);
     void removeMember(Long teamId, Long userId);
+    Team createTeamWithMembers(Long ownerId, String teamName, String description, List<String> memberUsernames);
+    Team addMembersByUsername(Long teamId, List<String> memberUsernames);
     void delete(Long teamId);
 }

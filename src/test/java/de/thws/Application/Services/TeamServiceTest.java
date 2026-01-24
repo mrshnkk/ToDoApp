@@ -26,7 +26,7 @@ class TeamServiceTest {
     void createTeamWithDescription() {
         InMemoryTeamRepository teamRepo = new InMemoryTeamRepository();
         InMemoryUserRepository userRepo = new InMemoryUserRepository();
-        TeamService service = new TeamService(teamRepo, userRepo);
+        TeamUseCaseImpl service = new TeamUseCaseImpl(teamRepo, userRepo);
 
         User owner = new TestUser("owner1", "owner1@test.com", "Abcdef!1");
         User member = new TestUser("member1", "member1@test.com", "Abcdef!1");
@@ -44,7 +44,7 @@ class TeamServiceTest {
     void addMembersByUsernameAddsMembers() {
         InMemoryTeamRepository teamRepo = new InMemoryTeamRepository();
         InMemoryUserRepository userRepo = new InMemoryUserRepository();
-        TeamService service = new TeamService(teamRepo, userRepo);
+        TeamUseCaseImpl service = new TeamUseCaseImpl(teamRepo, userRepo);
 
         User owner = new TestUser("owner2", "owner2@test.com", "Abcdef!1");
         User member = new TestUser("member2", "member2@test.com", "Abcdef!1");
@@ -65,7 +65,7 @@ class TeamServiceTest {
     void addMembersByUsernameThrowsWhenTeamMissing() {
         InMemoryTeamRepository teamRepo = new InMemoryTeamRepository();
         InMemoryUserRepository userRepo = new InMemoryUserRepository();
-        TeamService service = new TeamService(teamRepo, userRepo);
+        TeamUseCaseImpl service = new TeamUseCaseImpl(teamRepo, userRepo);
 
         assertThrows(TeamNotFoundException.class,
                 () -> service.addMembersByUsername(999L, List.of("member3")));
@@ -75,7 +75,7 @@ class TeamServiceTest {
     void createTeamThrowsWhenOwnerMissing() {
         InMemoryTeamRepository teamRepo = new InMemoryTeamRepository();
         InMemoryUserRepository userRepo = new InMemoryUserRepository();
-        TeamService service = new TeamService(teamRepo, userRepo);
+        TeamUseCaseImpl service = new TeamUseCaseImpl(teamRepo, userRepo);
 
         assertThrows(UserNotFoundException.class,
                 () -> service.createTeamWithMembers(404L, "Team C", "desc", null));
@@ -85,7 +85,7 @@ class TeamServiceTest {
     void createTeamThrowsOnDuplicateMember() {
         InMemoryTeamRepository teamRepo = new InMemoryTeamRepository();
         InMemoryUserRepository userRepo = new InMemoryUserRepository();
-        TeamService service = new TeamService(teamRepo, userRepo);
+        TeamUseCaseImpl service = new TeamUseCaseImpl(teamRepo, userRepo);
 
         User owner = new TestUser("owner3", "owner3@test.com", "Abcdef!1");
         User member = new TestUser("dupUser", "dup@test.com", "Abcdef!1");

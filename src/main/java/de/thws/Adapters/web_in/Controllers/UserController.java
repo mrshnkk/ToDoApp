@@ -65,6 +65,7 @@ public class UserController {
         return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
+// {"username":"alice","email":"a@b.com","password":"Abcdef!1"}
     @POST
     public Response create(UserCreateRequest request) {
         User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
