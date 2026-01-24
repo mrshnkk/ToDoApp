@@ -1,8 +1,7 @@
 package de.thws.Application.Services;
 
 import de.thws.Application.Domain.DomainModels.Task;
-import de.thws.Application.Domain.Services.TaskFilter;
-import de.thws.Application.Domain.Services.TaskQueryService;
+import de.thws.Application.Ports.in.TaskFilter;
 import de.thws.Application.Ports.in.TaskUseCase;
 import de.thws.Application.Ports.out.TaskRepository;
 import jakarta.enterprise.context.ApplicationScoped;

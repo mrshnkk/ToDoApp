@@ -1,8 +1,6 @@
 package de.thws.Application.Ports.in;
 
 import de.thws.Application.Domain.DomainModels.Task;
-import de.thws.Application.Domain.Services.TaskFilter;
-
 import java.util.List;
 import java.util.Optional;
 
