@@ -1,7 +1,12 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.JpaRepositories;
 
+import de.thws.Adapters.persistence_out.Entities.ProjectEntity;
+import de.thws.Adapters.persistence_out.Entities.TaskEntity;
+import de.thws.Adapters.persistence_out.Entities.UserEntity;
 import de.thws.Application.Domain.DomainModels.Project;
+import de.thws.Application.Domain.DomainModels.hydrators.ProjectHydrator;
 import de.thws.Application.Domain.DomainModels.Task;
+import de.thws.Application.Domain.DomainModels.hydrators.TaskHydrator;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.out.TaskRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -61,6 +66,7 @@ public class TaskRepositoryJpa implements TaskRepository {
             return;
         }
 
+        entity.setTitle(task.getTitle());
         entity.setDescription(task.getDescription());
         entity.setDeadline(task.getDeadline());
         entity.setPriority(task.getPriority());
@@ -99,32 +105,19 @@ public class TaskRepositoryJpa implements TaskRepository {
         if (entity == null) {
             return null;
         }
-        Task task = new Task(entity.getTitle());
-        task.setTaskId(entity.getTaskId());
-        if (entity.getDescription() != null) {
-            task.changeDescription(entity.getDescription());
-        }
-        if (entity.getDeadline() != null) {
-            task.setDeadline(entity.getDeadline());
-        }
-        if (entity.getPriority() != null) {
-            task.changePriority(entity.getPriority());
-        }
-        if (entity.getStatus() != null) {
-            task.changeStatus(entity.getStatus());
-        }
-        if (entity.getAssignedUser() != null) {
-            task.assignToUser(toDomain(entity.getAssignedUser()));
-        }
-        if (entity.getProject() != null) {
-            task.assignToProject(toDomain(entity.getProject()));
-        }
-        if (entity.getTags() != null) {
-            for (String tag : entity.getTags()) {
-                task.addTag(tag);
-            }
-        }
-        return task;
+        return TaskHydrator.fromPersisted(
+                entity.getTaskId(),
+                entity.getTitle(),
+                entity.getDescription(),
+                entity.getDeadline(),
+                entity.getPriority(),
+                entity.getStatus(),
+                toDomain(entity.getProject()),
+                entity.getTags(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt(),
+                toDomain(entity.getAssignedUser()),
+                null);
     }
 
     private TaskEntity toEntity(Task task) {
@@ -161,11 +154,14 @@ public class TaskRepositoryJpa implements TaskRepository {
             return null;
         }
         User owner = toDomain(entity.getOwner());
-        Project project = new Project(entity.getName(), owner);
-        project.setProjectId(entity.getProjectId());
-        project.setTeamId(entity.getTeamId());
-        project.updateDescription(entity.getDescription());
-        return project;
+        return ProjectHydrator.fromPersisted(
+                entity.getProjectId(),
+                entity.getName(),
+                entity.getDescription(),
+                entity.getStartDate(),
+                entity.getEndDate(),
+                owner,
+                entity.getTeamId());
     }
 
     private UserEntity toUserEntity(User user) {

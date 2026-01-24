@@ -1,7 +1,6 @@
 package de.thws.Application.Ports.in;
 
 import de.thws.Application.Domain.DomainModels.User;
-
 import java.util.Optional;
 
 public interface UserUseCase {

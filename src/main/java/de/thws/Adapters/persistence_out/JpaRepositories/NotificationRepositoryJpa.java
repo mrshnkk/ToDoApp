@@ -1,5 +1,6 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.JpaRepositories;
 
+import de.thws.Adapters.persistence_out.Entities.NotificationEntity;
 import de.thws.Application.Domain.DomainModels.NotificationRecord;
 import de.thws.Application.Domain.DomainModels.ReminderStatus;
 import de.thws.Application.Ports.out.NotificationRepository;

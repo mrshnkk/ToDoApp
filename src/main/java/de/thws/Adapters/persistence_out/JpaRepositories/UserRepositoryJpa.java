@@ -1,5 +1,6 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.JpaRepositories;
 
+import de.thws.Adapters.persistence_out.Entities.UserEntity;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.out.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;

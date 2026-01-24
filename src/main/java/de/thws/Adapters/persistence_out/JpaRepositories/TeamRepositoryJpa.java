@@ -1,6 +1,11 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.JpaRepositories;
 
+import de.thws.Adapters.persistence_out.Entities.TeamEntity;
+import de.thws.Adapters.persistence_out.Entities.TeamMemberEntity;
+import de.thws.Adapters.persistence_out.Entities.UserEntity;
 import de.thws.Application.Domain.DomainModels.Team;
+import de.thws.Application.Domain.DomainModels.TeamMember;
+import de.thws.Application.Domain.DomainModels.hydrators.TeamHydrator;
 import de.thws.Application.Domain.DomainModels.TeamRole;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.out.TeamRepository;
@@ -154,8 +159,24 @@ public class TeamRepositoryJpa implements TeamRepository {
             return null;
         }
         User owner = toDomain(entity.getOwner());
-        Team team = new Team(entity.getTeamName(), entity.getDescription(), owner);
-        team.setTeamId(entity.getTeamId());
+        Team team = TeamHydrator.fromPersisted(
+                entity.getTeamId(),
+                entity.getTeamName(),
+                entity.getDescription(),
+                owner,
+                entity.getCreatedAt());
+        List<TeamMemberEntity> members = entity.getTeamMembers();
+        if (members != null && !members.isEmpty()) {
+            List<TeamMember> domainMembers = team.getTeamMembers();
+            domainMembers.clear();
+            for (TeamMemberEntity member : members) {
+                User user = toDomain(member.getUser());
+                if (user != null) {
+                    domainMembers.add(TeamMember.fromPersisted(user, member.getRole(), member.getJoinedAt()));
+                }
+            }
+        }
+        ensureOwnerIsMember(team, owner);
         return team;
     }
 
@@ -185,6 +206,22 @@ public class TeamRepositoryJpa implements TeamRepository {
             return null;
         }
         return entityManager.getReference(UserEntity.class, user.getUserId());
+    }
+
+    private void ensureOwnerIsMember(Team team, User owner) {
+        if (team == null || owner == null) {
+            return;
+        }
+        List<TeamMember> members = team.getTeamMembers();
+        if (members == null) {
+            return;
+        }
+        for (TeamMember member : members) {
+            if (owner.equals(member.getUser())) {
+                return;
+            }
+        }
+        members.add(TeamMember.fromPersisted(owner, TeamRole.OWNER, team.getCreatedAt()));
     }
 
     private boolean memberExists(Long teamId, Long userId) {

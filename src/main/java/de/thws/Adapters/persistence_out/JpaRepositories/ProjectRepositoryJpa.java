@@ -1,6 +1,9 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.JpaRepositories;
 
+import de.thws.Adapters.persistence_out.Entities.ProjectEntity;
+import de.thws.Adapters.persistence_out.Entities.UserEntity;
 import de.thws.Application.Domain.DomainModels.Project;
+import de.thws.Application.Domain.DomainModels.hydrators.ProjectHydrator;
 import de.thws.Application.Domain.DomainModels.User;
 import de.thws.Application.Ports.out.ProjectRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -91,16 +94,20 @@ public class ProjectRepositoryJpa implements ProjectRepository {
             return null;
         }
         User owner = toDomain(entity.getOwner());
-        Project project = new Project(entity.getName(), owner);
-        project.setProjectId(entity.getProjectId());
-        project.setTeamId(entity.getTeamId());
-        project.updateDescription(entity.getDescription());
-        return project;
+        return ProjectHydrator.fromPersisted(
+                entity.getProjectId(),
+                entity.getName(),
+                entity.getDescription(),
+                entity.getStartDate(),
+                entity.getEndDate(),
+                owner,
+                entity.getTeamId());
     }
 
     private ProjectEntity toEntity(Project project) {
         User owner = project.getOwner();
         ProjectEntity entity = new ProjectEntity(project.getName(), toUserEntity(owner));
+        entity.setStartDate(project.getStartDate());
         entity.setDescription(project.getDescription());
         entity.setEndDate(project.getEndDate());
         entity.setTeamId(project.getTeamId());
