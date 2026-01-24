@@ -50,10 +50,27 @@ Note: ChatGPT was used for minor wording and debugging support.
 
 ## Architecture (Hexagonal)
 
-- Domain: `src/main/java/de/thws/Application/Domain` and `src/main/java/de/thws/Application/Services`
+- Domain: `src/main/java/de/thws/Application/Domain`
+- Domain Hydrators: `src/main/java/de/thws/Application/Domain/DomainModels/hydrators`
+- Use Cases (application services): `src/main/java/de/thws/Application/Services`
 - Ports: `src/main/java/de/thws/Application/Ports/in` and `src/main/java/de/thws/Application/Ports/out`
 - Adapter (API): `src/main/java/de/thws/Adapters/web_in`
 - Adapter (Persistence): `src/main/java/de/thws/Adapters/persistence_out`
+
+## Caching
+
+- GET responses are cached using Quarkus Cache (`@CacheResult`) with a 60s TTL.
+- Responses include `Cache-Control: private, max-age=60` for GET requests.
+
+## Hypermedia (HATEOAS)
+
+- Responses include link headers for self/update/delete and collection navigation (`self`, `next`, `prev`).
+- Collections also include item-level self links, and relationship operations are exposed via link relations.
+
+## Authentication / Authorization
+
+- Not required and not implemented for this project.
+
 
 ## Build and Run (Local)
 
