@@ -27,7 +27,22 @@ public class Project {
         this.startDate = LocalDateTime.now();
     }
 
-
+    public Project(Long projectId, String name, String description, LocalDateTime startDate,
+            LocalDate endDate, User owner, Long teamId){
+        if (name == null) {
+            throw new IllegalArgumentException("Project name is required");
+        }
+        if (owner == null) {
+            throw new IllegalArgumentException("Project must have an owner");
+        }
+        this.projectId = projectId;
+        this.name = name;
+        this.description = description;
+        this.startDate = startDate != null ? startDate : LocalDateTime.now();
+        this.endDate = endDate;
+        this.owner = owner;
+        this.teamId = teamId;
+    }
 
     public void addTask(Task task){
         if (task == null){
@@ -73,7 +88,7 @@ public class Project {
     }
 
     public List<Task> getTasks() {
-        return tasks;
+        return List.copyOf(tasks);
     }
 
     public String getName() {
@@ -118,15 +133,4 @@ public class Project {
         }
         this.teamId = teamId;
     }
-
-    //TODO  calculateProgress
-    //public double calculateProgress() {}
-
-    //TODO hasActiveTasks
-    //public boolean hasActiveTasks(){}
-
-
-
-
-
 }

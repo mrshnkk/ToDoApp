@@ -1,6 +1,6 @@
 package de.thws.Application.Domain.DomainModels;
 
-import de.thws.Application.Domain.Services.EmptyTaskTitleException;
+import de.thws.Application.Domain.Exceptions.EmptyTaskTitleException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,13 +27,41 @@ public class Task {
     public Task(String title) {
         if (title == null) {
             throw new IllegalArgumentException("Title is required");
-
         }
         this.title = title;
         this.priority = TaskPriority.MEDIUM;  //set default values (our tasks cannot exist without priorities and statuses)
         this.status = TaskStatus.TODO;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = createdAt;
+    }
+
+    //A constructor that creates a Task from database data without calling domain methods and without touch().
+    public Task(Long taskId, String title, String description, LocalDate deadline,
+         TaskPriority priority, TaskStatus status, Project project, Set<String> tags,
+         LocalDateTime createdAt, LocalDateTime updatedAt, User assignedUser, Notification notification){
+        if (title == null) {
+            throw new IllegalArgumentException("Title is required");
+        }
+        if (priority == null) {
+            throw new IllegalArgumentException("Priority is required");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("Status is required");
+        }
+        this.taskId = taskId;
+        this.title = title;
+        this.description = description;
+        this.deadline = deadline;
+        this.priority = priority;
+        this.status = status;
+        this.project = project;
+        if (tags != null && !tags.isEmpty()) {
+            this.tags.addAll(tags);
+        }
+        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+        this.updatedAt = updatedAt != null ? updatedAt : this.createdAt;
+        this.assignedUser = assignedUser;
+        this.notification = notification;
     }
 
 
@@ -43,7 +71,7 @@ public class Task {
 
 
     public void renameTask(String newTitle) {
-        if (newTitle.isEmpty()) {
+        if (newTitle == null || newTitle.isEmpty()) {
             throw new EmptyTaskTitleException("Task title cannot be empty");
         } else {
             this.title = newTitle;

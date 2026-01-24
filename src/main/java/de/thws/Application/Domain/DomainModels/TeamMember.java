@@ -11,11 +11,22 @@ public class TeamMember{
         this.role = role;
         this.joinedAt = LocalDateTime.now();
     }
+    TeamMember(User user, TeamRole role, LocalDateTime joinedAt) {
+        this.user = user;
+        this.role = role;
+        this.joinedAt = joinedAt != null ? joinedAt : LocalDateTime.now();
+    }
+    public static TeamMember fromPersisted(User user, TeamRole role, LocalDateTime joinedAt) {
+        return new TeamMember(user, role, joinedAt);
+    }
     public User getUser() {
         return user;
     }
     public TeamRole getRole() {
         return role;
+    }
+    public LocalDateTime getJoinedAt() {
+        return joinedAt;
     }
 
 }

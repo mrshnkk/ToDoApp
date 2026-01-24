@@ -116,8 +116,6 @@ public class User {
         for (int i = 0; i < username.length(); i++) { //username validation;
             if (check[i] == ' ') {
                 throw new IllegalArgumentException("Username should not contain spaces.");
-            } else {
-                i++;
             }
         }
     }
@@ -137,7 +135,7 @@ public class User {
                 countDot++;
             }
         }
-        if (countAt != 1 && countDot == 0) {
+        if (countAt != 1 || countDot == 0) {
             throw new IllegalArgumentException("Mail has to contain at and dot signs.");
         }
         if (email.length() < 8 || email.length() > 30) {
