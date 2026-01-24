@@ -1,9 +1,12 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.Entities;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="Users")
+@Table(name="Users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"Username"}),
+        @UniqueConstraint(columnNames = {"Email"})
+})
 public class UserEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -1,4 +1,4 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.Entities;
 import de.thws.Application.Domain.DomainModels.TaskPriority;
 import de.thws.Application.Domain.DomainModels.TaskStatus;
 import jakarta.persistence.*;
@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
 
 
 @Entity
@@ -80,6 +79,10 @@ public class TaskEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public void setDeadline(LocalDate deadline) {

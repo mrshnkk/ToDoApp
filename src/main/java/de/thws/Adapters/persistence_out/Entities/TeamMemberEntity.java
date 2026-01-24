@@ -1,4 +1,4 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.Entities;
 import de.thws.Application.Domain.DomainModels.TeamRole;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.Entities;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -81,6 +81,10 @@ public class TeamEntity {
             throw new IllegalStateException("ID already set");
         }
         this.teamId = id;
+    }
+
+    public List<TeamMemberEntity> getTeamMembers() {
+        return teamMembers;
     }
 
 }

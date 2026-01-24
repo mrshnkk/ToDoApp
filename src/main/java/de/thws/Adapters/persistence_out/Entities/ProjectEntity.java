@@ -1,7 +1,8 @@
-package de.thws.Adapters.persistence_out;
+package de.thws.Adapters.persistence_out.Entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,9 @@ public class ProjectEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<TaskEntity> tasks = new ArrayList<>();
+
+    @Column(name = "Start_Time", nullable = false)
+    private LocalDateTime startDate;
 
 
     @Column(name = "Ending_Time")
@@ -77,6 +81,10 @@ public class ProjectEntity {
 
     }
 
+    public LocalDateTime getStartDate() {
+        return startDate;
+    }
+
     public List<TaskEntity> getTasks() {
         return tasks;
 
@@ -92,6 +100,10 @@ public class ProjectEntity {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
     }
 
     public void setOwner(UserEntity owner) {

@@ -3,7 +3,6 @@ package de.thws.Application.Ports.out;
 import de.thws.Application.Domain.DomainModels.User;
 import java.util.Optional;
 
-//TODO implementation of UserRepository -> adapter layer
 public interface UserRepository {
     Optional<User> findById(Long userId); //Optional<User> is used to prevent NullPointerException
     Optional<User>  findByUsername(String username);
