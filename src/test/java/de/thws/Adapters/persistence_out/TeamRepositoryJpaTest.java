@@ -1,5 +1,8 @@
 package de.thws.Adapters.persistence_out;
 
+import de.thws.Adapters.persistence_out.Entities.TeamEntity;
+import de.thws.Adapters.persistence_out.Entities.TeamMemberEntity;
+import de.thws.Adapters.persistence_out.Entities.UserEntity;
 import de.thws.Application.Domain.DomainModels.Team;
 import de.thws.Application.Domain.DomainModels.TeamRole;
 import de.thws.Application.Domain.DomainModels.User;

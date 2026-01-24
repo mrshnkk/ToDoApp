@@ -1,36 +1,20 @@
-package de.thws.Adapters.web_in;
+package de.thws.Adapters.web_in.Controllers;
 
+import de.thws.Adapters.web_in.LinkHeaderSupport;
+import de.thws.Adapters.web_in.PageSlice;
+import de.thws.Adapters.web_in.ResponseMapper;
 import de.thws.Adapters.web_in.dto.ItemWithSelfLink;
 import de.thws.Adapters.web_in.dto.TaskCreateRequest;
 import de.thws.Adapters.web_in.dto.TaskResponse;
 import de.thws.Adapters.web_in.dto.TaskUpdateRequest;
-import de.thws.Application.Domain.DomainModels.Project;
-import de.thws.Application.Domain.DomainModels.Task;
-import de.thws.Application.Domain.DomainModels.TaskPriority;
-import de.thws.Application.Domain.DomainModels.TaskStatus;
-import de.thws.Application.Domain.DomainModels.User;
-import de.thws.Application.Domain.Services.TaskFilter;
-import de.thws.Application.Ports.in.ProjectUseCase;
-import de.thws.Application.Ports.in.TaskUseCase;
-import de.thws.Application.Ports.in.UserUseCase;
+import de.thws.Application.Domain.DomainModels.*;
+import de.thws.Application.Ports.in.TaskFilter;
+import de.thws.Application.Ports.in.*;
 import io.quarkus.cache.CacheResult;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Link;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -120,7 +104,7 @@ public class TaskController {
     }
 
     @POST
-    public TaskResponse create(TaskCreateRequest request) {
+    public Response create(TaskCreateRequest request) {
         Task task = new Task(request.getTitle());
         if (request.getDescription() != null) {
             task.changeDescription(request.getDescription());
@@ -149,12 +133,15 @@ public class TaskController {
                 task.addTag(tag);
             }
         }
-        return ResponseMapper.toTaskResponse(taskUseCase.create(task));
+        TaskResponse response = ResponseMapper.toTaskResponse(taskUseCase.create(task));
+        List<Link> links = new ArrayList<>(LinkHeaderSupport.resourceLinks(uriInfo, TASKS_PATH, response.getTaskId()));
+        links.addAll(LinkHeaderSupport.taskAssignmentLinks(uriInfo, response.getTaskId(), response.getAssignedUserId()));
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @PUT
     @Path("/{id}")
-    public TaskResponse update(@PathParam("id") Long id, TaskUpdateRequest request) {
+    public Response update(@PathParam("id") Long id, TaskUpdateRequest request) {
         Task task = taskUseCase.findById(id).orElseThrow(NotFoundException::new);
         if (request.getTitle() != null) {
             task.renameTask(request.getTitle());
@@ -187,7 +174,10 @@ public class TaskController {
                 task.addTag(tag);
             }
         }
-        return ResponseMapper.toTaskResponse(taskUseCase.update(task));
+        TaskResponse response = ResponseMapper.toTaskResponse(taskUseCase.update(task));
+        List<Link> links = new ArrayList<>(LinkHeaderSupport.resourceLinks(uriInfo, TASKS_PATH, response.getTaskId()));
+        links.addAll(LinkHeaderSupport.taskAssignmentLinks(uriInfo, response.getTaskId(), response.getAssignedUserId()));
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @PUT

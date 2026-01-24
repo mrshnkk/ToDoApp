@@ -1,5 +1,8 @@
-package de.thws.Adapters.web_in;
+package de.thws.Adapters.web_in.Controllers;
 
+import de.thws.Adapters.web_in.LinkHeaderSupport;
+import de.thws.Adapters.web_in.PageSlice;
+import de.thws.Adapters.web_in.ResponseMapper;
 import de.thws.Adapters.web_in.dto.ItemWithSelfLink;
 import de.thws.Adapters.web_in.dto.ProjectCreateRequest;
 import de.thws.Adapters.web_in.dto.ProjectResponse;
@@ -10,21 +13,8 @@ import de.thws.Application.Ports.in.ProjectUseCase;
 import de.thws.Application.Ports.in.UserUseCase;
 import io.quarkus.cache.CacheResult;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Link;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +64,7 @@ public class ProjectController {
     }
 
     @POST
-    public ProjectResponse create(ProjectCreateRequest request) {
+    public Response create(ProjectCreateRequest request) {
         User owner = userUseCase.findById(request.getOwnerId())
                 .orElseThrow(NotFoundException::new);
         Project project = new Project(request.getName(), owner);
@@ -84,12 +74,14 @@ public class ProjectController {
         if (request.getTeamId() != null) {
             project.setTeamId(request.getTeamId());
         }
-        return ResponseMapper.toProjectResponse(projectUseCase.create(project));
+        ProjectResponse response = ResponseMapper.toProjectResponse(projectUseCase.create(project));
+        List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, PROJECTS_PATH, response.getProjectId());
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @PUT
     @Path("/{id}")
-    public ProjectResponse update(@PathParam("id") Long id, ProjectUpdateRequest request) {
+    public Response update(@PathParam("id") Long id, ProjectUpdateRequest request) {
         Project project = projectUseCase.findById(id).orElseThrow(NotFoundException::new);
         if (request.getName() != null) {
             project.updateName(request.getName());
@@ -103,7 +95,9 @@ public class ProjectController {
         if (request.getTeamId() != null) {
             project.setTeamId(request.getTeamId());
         }
-        return ResponseMapper.toProjectResponse(projectUseCase.update(project));
+        ProjectResponse response = ResponseMapper.toProjectResponse(projectUseCase.update(project));
+        List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, PROJECTS_PATH, response.getProjectId());
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @DELETE

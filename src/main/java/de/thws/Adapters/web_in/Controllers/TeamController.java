@@ -1,5 +1,8 @@
-package de.thws.Adapters.web_in;
+package de.thws.Adapters.web_in.Controllers;
 
+import de.thws.Adapters.web_in.LinkHeaderSupport;
+import de.thws.Adapters.web_in.PageSlice;
+import de.thws.Adapters.web_in.ResponseMapper;
 import de.thws.Adapters.web_in.dto.ItemWithSelfLink;
 import de.thws.Adapters.web_in.dto.TeamCreateRequest;
 import de.thws.Adapters.web_in.dto.TeamResponse;
@@ -76,23 +79,29 @@ public class TeamController {
     }
 
     @POST
-    public TeamResponse create(TeamCreateRequest request) {
+    public Response create(TeamCreateRequest request) {
         User owner = userUseCase.findById(request.getOwnerId())
                 .orElseThrow(NotFoundException::new);
         Team team = request.getDescription() == null
                 ? new Team(request.getTeamName(), owner)
                 : new Team(request.getTeamName(), request.getDescription(), owner);
-        return ResponseMapper.toTeamResponse(teamUseCase.create(team));
+        TeamResponse response = ResponseMapper.toTeamResponse(teamUseCase.create(team));
+        List<Link> links = new ArrayList<>(LinkHeaderSupport.resourceLinks(uriInfo, TEAMS_PATH, response.getTeamId()));
+        links.addAll(LinkHeaderSupport.teamMemberLinks(uriInfo, response.getTeamId()));
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @PUT
     @Path("/{id}")
-    public TeamResponse update(@PathParam("id") Long id, TeamUpdateRequest request) {
+    public Response update(@PathParam("id") Long id, TeamUpdateRequest request) {
         Team team = teamUseCase.findById(id).orElseThrow(NotFoundException::new);
         String teamName = request.getTeamName() != null ? request.getTeamName() : team.getTeamName();
         String description = request.getDescription() != null ? request.getDescription() : team.getDescription();
         team.updateTeam(teamName, description);
-        return ResponseMapper.toTeamResponse(teamUseCase.update(team));
+        TeamResponse response = ResponseMapper.toTeamResponse(teamUseCase.update(team));
+        List<Link> links = new ArrayList<>(LinkHeaderSupport.resourceLinks(uriInfo, TEAMS_PATH, response.getTeamId()));
+        links.addAll(LinkHeaderSupport.teamMemberLinks(uriInfo, response.getTeamId()));
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @DELETE

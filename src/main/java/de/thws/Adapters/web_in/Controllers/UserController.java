@@ -1,5 +1,7 @@
-package de.thws.Adapters.web_in;
+package de.thws.Adapters.web_in.Controllers;
 
+import de.thws.Adapters.web_in.LinkHeaderSupport;
+import de.thws.Adapters.web_in.ResponseMapper;
 import de.thws.Adapters.web_in.dto.UserCreateRequest;
 import de.thws.Adapters.web_in.dto.UserResponse;
 import de.thws.Adapters.web_in.dto.UserUpdateRequest;
@@ -64,14 +66,16 @@ public class UserController {
     }
 
     @POST
-    public UserResponse create(UserCreateRequest request) {
+    public Response create(UserCreateRequest request) {
         User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
-        return ResponseMapper.toUserResponse(userUseCase.create(user));
+        UserResponse response = ResponseMapper.toUserResponse(userUseCase.create(user));
+        List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, USERS_PATH, response.getUserId());
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @PUT
     @Path("/{id}")
-    public UserResponse update(@PathParam("id") Long id, UserUpdateRequest request) {
+    public Response update(@PathParam("id") Long id, UserUpdateRequest request) {
         User user = userUseCase.findById(id).orElseThrow(NotFoundException::new);
         if (request.getUsername() != null) {
             user.changeUsername(request.getUsername());
@@ -82,7 +86,9 @@ public class UserController {
         if (request.getPassword() != null) {
             user.changePassword(request.getPassword());
         }
-        return ResponseMapper.toUserResponse(userUseCase.update(user));
+        UserResponse response = ResponseMapper.toUserResponse(userUseCase.update(user));
+        List<Link> links = LinkHeaderSupport.resourceLinks(uriInfo, USERS_PATH, response.getUserId());
+        return Response.ok(response).links(links.toArray(new Link[0])).build();
     }
 
     @DELETE
